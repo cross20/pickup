@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(MyApp());
 
@@ -56,6 +57,13 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
+  String _displayData() {
+    Firestore.instance
+        .collection('Users').document()
+        .setData({'Name': 'Ben Marler'});
+
+    return "Test";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:',
+              _displayData(),
             ),
             Text(
               '$_counter',
