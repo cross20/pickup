@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(MyApp());
 
@@ -56,10 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
-<<<<<<< Updated upstream
-=======
-  
->>>>>>> Stashed changes
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-<<<<<<< Updated upstream
-              'You have pushed the button this many times:',
-=======
               'You have pushed the button this many times:()',
->>>>>>> Stashed changes
             ),
             Text(
               '$_counter',
