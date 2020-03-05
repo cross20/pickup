@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>690596491515-7m0d8m048keaisos43mohouj4iu2r94m.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.690596491515-7m0d8m048keaisos43mohouj4iu2r94m</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCm-NSUknto6o212eZ9GpKt5jl1Dhl8ZJs</string>
+	<key>GCM_SENDER_ID</key>
+	<string>690596491515</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.pickupapp.pickupApp</string>
+	<key>PROJECT_ID</key>
+	<string>pickup-1a3fc</string>
+	<key>STORAGE_BUCKET</key>
+	<string>pickup-1a3fc.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:690596491515:ios:65f1670403b843fac6405e</string>
+	<key>DATABASE_URL</key>
+	<string>https://pickup-1a3fc.firebaseio.com</string>
+</dict>
+</plist>
