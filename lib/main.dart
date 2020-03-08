@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'game.dart';
+import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+// Global Database linking to firestore
+Database instance = new Database();
 
 void main() => runApp(MyApp());
 
@@ -56,7 +62,22 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      // A game will be pushed to the database everytime the + button is clicked
+      creategame();
     });
+  }
+
+  // Function to create a new game and add to the firestore database.
+  void creategame() {
+    Game game = new Game(
+        endtime: Timestamp.now(),
+        location: GeoPoint(47.0, 23.2),
+        note: "Ball needed",
+        playersneeded: 5,
+        private: true,
+        sport: "Basketball",
+        starttime: Timestamp.now());
+    instance.addgame(game.toMap());
   }
 
   @override
