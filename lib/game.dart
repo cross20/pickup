@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 // Data Model Class to store game information and allow for both serialization and deserialization
 // of firebase data.
 class Game {
+  final String id;
   Timestamp endtime;
   GeoPoint location;
   String note;
@@ -32,7 +33,8 @@ class Game {
 
   // Default Constructor
   Game(
-      {this.endtime,
+      { this.id,
+      this.endtime,
       this.location,
       this.note,
       this.playersneeded,
@@ -59,6 +61,30 @@ class Game {
     );
   }
   
+ // Function that allows for deserializaiton of Game Objects from the 
+  // firestore database. When we will be retreiving game information from the
+  // database, they will be returned to us in firestore form form. We need this
+  // fromfirestore function to easily convert the firestore data to be accessed
+  // within our class. Inspired by the link below in the section: From a firestore document.
+  // We can either use fromFirestore or fromMap to deserialize our data. I believe we should 
+  // use from fromFirestore so that we can assign each game the doc ID key that is generated in the firestore
+  // DB. If we do not use this strategy I am not sure how we will access the key. 
+  // https://fireship.io/lessons/advanced-flutter-firebase/
+  factory Game.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data;
+    return Game(
+      id: doc.documentID,
+      endtime: data['endtime'] ?? '',
+      location: data['location'] ?? '',
+      note: data['note'] ?? '',
+      playersneeded: data['playersneeded'] ?? 0,
+      private: data['private'] ?? false,
+      sport: data['sport'] ?? '',
+      starttime: data['starttime'] ?? '',
+    );
+  }
+
+
   // Function that maps our game object to the proper format
   // in order to be added to the database.
   // Inspired by the link below
