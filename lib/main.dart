@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'game.dart';
+import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -5,6 +8,9 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+
+// Global Database linking to firestore
+Database instance = new Database();
 
 void main() => runApp(MyApp());
 
@@ -50,7 +56,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
+
   String dropdownsport = "Basketball"; ///initial value of sport
   String dropdownpub = "Public"; //initial value of priv or pub match
 
@@ -62,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //address in string form
   String addr = " ";
 
-  //Notes in string form 
+  //Notes in string form
   String msg = " ";
 
 
@@ -87,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
     pickedStart = await showTimePicker(
       context: context,
       initialTime: _timeStart,);
-    
+
     setState(() {
       _timeStart = pickedStart;
       startGameTime = DateTime(startGameTime.year, startGameTime.month, startGameTime.day, pickedStart.hour, pickedStart.minute, 00);
@@ -98,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
     pickedEnd = await showTimePicker(
       context: context,
       initialTime: _timeEnd,);
-    
+
     setState(() {
       _timeEnd = pickedEnd;
       endGameTime = DateTime(endGameTime.year, endGameTime.month, endGameTime.day, pickedEnd.hour, pickedEnd.minute, 00);
@@ -107,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     ////this function is called when submit button is hit, this is where I figured the update to database would occur
   void _updateData() {
-    ///to pass in the timestamp of both startGameTime and endGameTime, 
+    ///to pass in the timestamp of both startGameTime and endGameTime,
       var startTime = startGameTime.millisecondsSinceEpoch / 1000;
       var endTime = endGameTime.millisecondsSinceEpoch / 1000;
 
@@ -129,16 +135,30 @@ class _MyHomePageState extends State<MyHomePage> {
     //     starttime: startTime);
     // instance.addgame(game.toMap());
 
-    
+
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      addr = myControllerAddr.text;
-      msg = myControlMsg.text;
+      _counter++;
+      // A game will be pushed to the database everytime the + button is clicked
+      creategame();
     });
+  }
+
+  // Function to create a new game and add to the firestore database.
+  void creategame() {
+    Game game = new Game(
+        endtime: Timestamp.now(),
+        location: GeoPoint(47.0, 23.2),
+        note: "Ball needed",
+        playersneeded: 5,
+        private: true,
+        sport: "Basketball",
+        starttime: Timestamp.now());
+    instance.addgame(game.toMap());
   }
 
   @override
@@ -187,11 +207,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     alignment: Alignment.center,),
                 Container(
                     child: TextField(decoration: InputDecoration( hintText: 'Enter Address Here'), controller: myControllerAddr,),
-                    constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 300.0, minHeight: 50.0, minWidth: 50.0),),], 
+                    constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 300.0, minHeight: 50.0, minWidth: 50.0),),],
             ),
 
 ///time and date row ------------------------------------------------------------
-            Row(children: <Widget>[ 
+            Row(children: <Widget>[
               Container( //Time/Date text
                 child: Text('Time/Date:', style: TextStyle(fontSize: 20)),
                 constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
@@ -210,7 +230,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           }, onConfirm: (date) {
                             print('confirm $date');
                           }, currentTime: gameDate, locale: LocaleType.en);
-                      },        
+                      },
                           child: Text(
                               'date',
                            style: TextStyle(color: Colors.blue),
@@ -221,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: FlatButton( ////start time button
                     onPressed: () {
                       selectstartTime(context);
-                    },      
+                    },
                         child: Text(
                               'start time',
                            style: TextStyle(color: Colors.blue),
@@ -232,14 +252,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: FlatButton( ////end time button
                     onPressed: () {
                       selectendTime(context);
-                    },      
+                    },
                         child: Text(
                               'end time',
                            style: TextStyle(color: Colors.blue),
                     )),
                   constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
                   alignment: Alignment.center,)
-                  
+
             ],),
 
 // select sport ------------------------------------------------------------------------
@@ -292,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),)
               ],
             ),
-           
+
 ///# of players ---------------------------------------------------------------------------------
             Row(children: <Widget>[
               Container(alignment: Alignment.centerLeft,
