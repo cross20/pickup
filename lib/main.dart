@@ -142,7 +142,6 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
       // A game will be pushed to the database everytime the + button is clicked
       creategame();
     });
@@ -156,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
         note: "Ball needed",
         playersneeded: 5,
         private: true,
-        sport: "Basketball",
+        sport: "Football",
         starttime: Timestamp.now());
     instance.addgame(game.toMap());
   }
