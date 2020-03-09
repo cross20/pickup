@@ -59,18 +59,77 @@ class _MyHomePageState extends State<MyHomePage> {
   final myControlSport = TextEditingController(); // for sport selection
   final myControlpub = TextEditingController(); // for pub/priv match selection
 
+  //address in string form
   String addr = " ";
+
+  //Notes in string form 
   String msg = " ";
 
+
+  ///# of players
+  int _currentNumPlay = 3;
+
   var gameDate = DateTime.now();
-  final startGameTime = DateTime.now();
-  final endGameTime = DateTime.now();
+  var startGameTime = DateTime.now();
+  var endGameTime = DateTime.now();
 
   final format = DateFormat("yyyy-MM-dd HH:mm"); //for the DateTimePicker
 
-  int _currentNumPlay = 3;
 
+  ///https://www.youtube.com/watch?v=iX3vCtcHwPE timePicker from that video
+  TimeOfDay _timeStart = TimeOfDay.now();
+  TimeOfDay pickedStart;
+
+  TimeOfDay _timeEnd = TimeOfDay.now();
+  TimeOfDay pickedEnd;
+
+  Future<Null> selectstartTime(BuildContext context) async {
+    pickedStart = await showTimePicker(
+      context: context,
+      initialTime: _timeStart,);
+    
+    setState(() {
+      _timeStart = pickedStart;
+      startGameTime = DateTime(startGameTime.year, startGameTime.month, startGameTime.day, pickedStart.hour, pickedStart.minute, 00);
+    });
+    }
+
+  Future<Null> selectendTime(BuildContext context) async {
+    pickedEnd = await showTimePicker(
+      context: context,
+      initialTime: _timeEnd,);
+    
+    setState(() {
+      _timeEnd = pickedEnd;
+      endGameTime = DateTime(endGameTime.year, endGameTime.month, endGameTime.day, pickedEnd.hour, pickedEnd.minute, 00);
+    });
+    }
+
+    ////this function is called when submit button is hit, this is where I figured the update to database would occur
   void _updateData() {
+    ///to pass in the timestamp of both startGameTime and endGameTime, 
+      var startTime = startGameTime.millisecondsSinceEpoch / 1000;
+      var endTime = endGameTime.millisecondsSinceEpoch / 1000;
+
+    ///set bool for public/private match
+      bool priv = false;
+      if(dropdownpub == "Public")
+          priv = false;
+      else
+          priv = true;
+
+    // void creategame() {
+    // Game game = new Game(
+    //     endtime: endTime,
+    //     location: GeoPoint(47.0, 23.2), ///eventually will be addr after Google API integration
+    //     note: msg,
+    //     playersneeded: _currentNumPlay,
+    //     private: priv,
+    //     sport: dropdownsport,
+    //     starttime: startTime);
+    // instance.addgame(game.toMap());
+
+    
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -146,6 +205,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               maxTime: DateTime(2020, 12, 31), onChanged: (date) {
                             print('change $date');
                             gameDate = date;
+                            startGameTime = DateTime(gameDate.year, gameDate.month, gameDate.day, startGameTime.hour, startGameTime.minute, 00);
+                            endGameTime = DateTime(gameDate.year, gameDate.month, gameDate.day, endGameTime.hour, endGameTime.minute, 00);
                           }, onConfirm: (date) {
                             print('confirm $date');
                           }, currentTime: gameDate, locale: LocaleType.en);
@@ -159,28 +220,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 Container(
                   child: FlatButton( ////start time button
                     onPressed: () {
-                         DateTimeField( //https://pub.dev/packages/datetime_picker_formfield#-readme-tab-
-                           format: format,
-                           onShowPicker: (context, currentValue) async {
-                            final date = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime(DateTime.now().year,DateTime.now().month, DateTime.now().day),
-                            initialDate: currentValue ?? DateTime.now(),
-                            lastDate: DateTime(DateTime.now().year + 2));
-                            if (date != null) {
-                                final time = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-                                );
-                              return DateTimeField.combine(date, time);
-                            } 
-                            else {
-                             return currentValue;
-                            }
-                          },);
-                        },      
-                          child: Text(
+                      selectstartTime(context);
+                    },      
+                        child: Text(
                               'start time',
+                           style: TextStyle(color: Colors.blue),
+                    )),
+                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
+                  alignment: Alignment.center,),
+                Container(
+                  child: FlatButton( ////end time button
+                    onPressed: () {
+                      selectendTime(context);
+                    },      
+                        child: Text(
+                              'end time',
                            style: TextStyle(color: Colors.blue),
                     )),
                   constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
@@ -265,29 +319,12 @@ class _MyHomePageState extends State<MyHomePage> {
             Text('sport: $dropdownsport'),
             Text('pub/priv: $dropdownpub'),
             Text('num of players: $_currentNumPlay'),
-            Text('Basic date & time field (${format.toString()})'),
+            Text('Start time: $_timeStart'),
+            Text('End time: $endGameTime'),
+            Text('Full start time date/time: ${startGameTime})'),
+            Text('${startGameTime.toString()}'),
 
- ///Another way of selecting the time
-            DateTimeField( //https://pub.dev/packages/datetime_picker_formfield#-readme-tab-
-                  format: format,
-                   onShowPicker: (context, currentValue) async {
-                    final date = await showDatePicker(
-                    context: context,
-                   firstDate: DateTime(DateTime.now().year,DateTime.now().month, DateTime.now().day),
-                   initialDate: currentValue ?? DateTime.now(),
-                    lastDate: DateTime(DateTime.now().year + 2));
-                    if (date != null) {
-                   final time = await showTimePicker(
-                    context: context,
-                    initialTime:
-                      TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-                    );
-                    return DateTimeField.combine(date, time);
-                } else {
-                  return currentValue;
-          }
-        },
-      ),
+
           ],
         ),
       ),
