@@ -56,8 +56,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String dropdownsport = "Basketball";
 
-  String dropdownsport = "Basketball"; ///initial value of sport
+  ///initial value of sport
   String dropdownpub = "Public"; //initial value of priv or pub match
 
   final myControllerAddr = TextEditingController(); //for the entered address
@@ -71,7 +72,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //Notes in string form
   String msg = " ";
 
-
   ///# of players
   int _currentNumPlay = 3;
 
@@ -80,7 +80,6 @@ class _MyHomePageState extends State<MyHomePage> {
   var endGameTime = DateTime.now();
 
   final format = DateFormat("yyyy-MM-dd HH:mm"); //for the DateTimePicker
-
 
   ///https://www.youtube.com/watch?v=iX3vCtcHwPE timePicker from that video
   TimeOfDay _timeStart = TimeOfDay.now();
@@ -92,37 +91,42 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<Null> selectstartTime(BuildContext context) async {
     pickedStart = await showTimePicker(
       context: context,
-      initialTime: _timeStart,);
+      initialTime: _timeStart,
+    );
 
     setState(() {
       _timeStart = pickedStart;
-      startGameTime = DateTime(startGameTime.year, startGameTime.month, startGameTime.day, pickedStart.hour, pickedStart.minute, 00);
+      startGameTime = DateTime(startGameTime.year, startGameTime.month,
+          startGameTime.day, pickedStart.hour, pickedStart.minute, 00);
     });
-    }
+  }
 
   Future<Null> selectendTime(BuildContext context) async {
     pickedEnd = await showTimePicker(
       context: context,
-      initialTime: _timeEnd,);
+      initialTime: _timeEnd,
+    );
 
     setState(() {
       _timeEnd = pickedEnd;
-      endGameTime = DateTime(endGameTime.year, endGameTime.month, endGameTime.day, pickedEnd.hour, pickedEnd.minute, 00);
+      endGameTime = DateTime(endGameTime.year, endGameTime.month,
+          endGameTime.day, pickedEnd.hour, pickedEnd.minute, 00);
     });
-    }
+  }
 
-    ////this function is called when submit button is hit, this is where I figured the update to database would occur
+  ////this function is called when submit button is hit, this is where I figured the update to database would occur
   void _updateData() {
     ///to pass in the timestamp of both startGameTime and endGameTime,
-      var startTime = startGameTime.millisecondsSinceEpoch / 1000;
-      var endTime = endGameTime.millisecondsSinceEpoch / 1000;
+    
+    Timestamp _starttime = Timestamp.fromDate(startGameTime);
+    Timestamp _endtime = Timestamp.fromDate(endGameTime);
 
     ///set bool for public/private match
-      bool priv = false;
-      if(dropdownpub == "Public")
-          priv = false;
-      else
-          priv = true;
+    bool priv = false;
+    if (dropdownpub == "Public")
+      priv = false;
+    else
+      priv = true;
 
     // void creategame() {
     // Game game = new Game(
@@ -135,7 +139,6 @@ class _MyHomePageState extends State<MyHomePage> {
     //     starttime: startTime);
     // instance.addgame(game.toMap());
 
-
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -143,20 +146,26 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       // A game will be pushed to the database everytime the + button is clicked
-      creategame();
+
+      ///addr = myControlAddr
+      msg = myControlMsg.text;
+      creategame(_endtime, GeoPoint(47.0, 23.2), msg, _currentNumPlay, priv, dropdownsport, _starttime);
     });
+
   }
 
   // Function to create a new game and add to the firestore database.
-  void creategame() {
+  void creategame(Timestamp _endtime, GeoPoint _location, String _note,
+      int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
     Game game = new Game(
-        endtime: Timestamp.now(),
-        location: GeoPoint(47.0, 23.2),
-        note: "Ball needed",
-        playersneeded: 5,
-        private: true,
-        sport: "Football",
-        starttime: Timestamp.now());
+        endtime:  _endtime,
+        location: _location,
+        note: _note,
+        playersneeded: _playersneeded,
+        private: _private,
+        sport: _sport,
+        starttime: _starttime,
+    );
     instance.addgame(game.toMap());
   }
 
@@ -179,7 +188,6 @@ class _MyHomePageState extends State<MyHomePage> {
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
-
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
           // children horizontally, and tries to be as tall as its parent.
@@ -196,141 +204,233 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-
-///enter address -------------------------------------------------------------
+            ///enter address -------------------------------------------------------------
             Row(
               children: <Widget>[
                 Container(
-                    child: Text('Address:', style: TextStyle(fontSize: 20),),
-                    constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                    alignment: Alignment.center,),
-                Container(
-                    child: TextField(decoration: InputDecoration( hintText: 'Enter Address Here'), controller: myControllerAddr,),
-                    constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 300.0, minHeight: 50.0, minWidth: 50.0),),],
-            ),
-
-///time and date row ------------------------------------------------------------
-            Row(children: <Widget>[
-              Container( //Time/Date text
-                child: Text('Time/Date:', style: TextStyle(fontSize: 20)),
-                constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                alignment: Alignment.bottomCenter,),
-              Container(
-                child: FlatButton( ///date button
-                    onPressed: () {
-                            DatePicker.showDatePicker(context,
-                              showTitleActions: true,
-                              minTime: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-                              maxTime: DateTime(2020, 12, 31), onChanged: (date) {
-                            print('change $date');
-                            gameDate = date;
-                            startGameTime = DateTime(gameDate.year, gameDate.month, gameDate.day, startGameTime.hour, startGameTime.minute, 00);
-                            endGameTime = DateTime(gameDate.year, gameDate.month, gameDate.day, endGameTime.hour, endGameTime.minute, 00);
-                          }, onConfirm: (date) {
-                            print('confirm $date');
-                          }, currentTime: gameDate, locale: LocaleType.en);
-                      },
-                          child: Text(
-                              'date',
-                           style: TextStyle(color: Colors.blue),
-                    )),
-                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                  alignment: Alignment.center,),
-                Container(
-                  child: FlatButton( ////start time button
-                    onPressed: () {
-                      selectstartTime(context);
-                    },
-                        child: Text(
-                              'start time',
-                           style: TextStyle(color: Colors.blue),
-                    )),
-                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                  alignment: Alignment.center,),
-                Container(
-                  child: FlatButton( ////end time button
-                    onPressed: () {
-                      selectendTime(context);
-                    },
-                        child: Text(
-                              'end time',
-                           style: TextStyle(color: Colors.blue),
-                    )),
-                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                  alignment: Alignment.center,)
-
-            ],),
-
-// select sport ------------------------------------------------------------------------
-            Row( //sport row
-              children: <Widget>[
-                Container(
-                  child: Text( 'Sport:',style: TextStyle(fontSize: 20), ),
-                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 100.0, minHeight: 50.0, minWidth: 50.0),
-                  alignment: Alignment.center,),
-                Container(
-                  child: DropdownButton<String>(
-                            value: dropdownsport,
-                            iconSize: 20,
-                            onChanged: (String newValue){
-                            setState(() {
-                               dropdownsport = newValue;
-                            });
-                            },
-                            items: <String> ['Basketball', 'Soccer', 'Football', 'Baseball']
-                            .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(value: value, child: Text(value),);
-                             }).toList(),
-                      ),
-                  alignment: Alignment.centerRight,
-                 )
-              ]),
-
-// private or public match ----------------------------------------------------------
-            Row( //private or public match row
-              children: <Widget>[
-                Container(
-                  child: Text("Private or Public match?", style: TextStyle(fontSize: 20)),
-                  constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 200.0, minHeight: 50.0, minWidth: 50.0),
-                  alignment: Alignment.center,
+                  child: Text(
+                    'Address:',
+                    style: TextStyle(fontSize: 20),
                   ),
-                Container(
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 100.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
                   alignment: Alignment.center,
-                  child: DropdownButton<String>(
-                      value: dropdownpub,
-                      iconSize: 20,
-                      onChanged: (String newValue){
-                       setState(() {
-                          dropdownpub = newValue;
-                       });
-              },
-              items: <String> ['Private', 'Public']
-                .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(value: value, child: Text(value),);
-                }).toList(),
-                ),)
+                ),
+                Container(
+                  child: TextField(
+                    decoration: InputDecoration(hintText: 'Enter Address Here'),
+                    controller: myControllerAddr,
+                  ),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 300.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                ),
               ],
             ),
 
-///# of players ---------------------------------------------------------------------------------
-            Row(children: <Widget>[
-              Container(alignment: Alignment.centerLeft,
-                child: Text('# of players: ', style: TextStyle(fontSize: 20),),
-                constraints: BoxConstraints(maxHeight: 50.0, maxWidth: 200.0, minHeight: 50.0, minWidth: 50.0),),
-              Container(alignment: Alignment.center,
-                child: new NumberPicker.integer(
-                  initialValue: _currentNumPlay,
-                  minValue: 3,
-                  maxValue: 25,
-                  onChanged:(newValue) =>
-                    setState(() => _currentNumPlay = newValue))
+            ///time and date row ------------------------------------------------------------
+            Row(
+              children: <Widget>[
+                Container(
+                  //Time/Date text
+                  child: Text('Time/Date:', style: TextStyle(fontSize: 20)),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 100.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                  alignment: Alignment.bottomCenter,
+                ),
+                Container(
+                  child: FlatButton(
+
+                      ///date button
+                      onPressed: () {
+                        DatePicker.showDatePicker(context,
+                            showTitleActions: true,
+                            minTime: DateTime(DateTime.now().year,
+                                DateTime.now().month, DateTime.now().day),
+                            maxTime: DateTime(2020, 12, 31), onChanged: (date) {
+                          print('change $date');
+                          gameDate = date;
+                          startGameTime = DateTime(
+                              gameDate.year,
+                              gameDate.month,
+                              gameDate.day,
+                              startGameTime.hour,
+                              startGameTime.minute,
+                              00);
+                          endGameTime = DateTime(
+                              gameDate.year,
+                              gameDate.month,
+                              gameDate.day,
+                              endGameTime.hour,
+                              endGameTime.minute,
+                              00);
+                        }, onConfirm: (date) {
+                          print('confirm $date');
+                        }, currentTime: gameDate, locale: LocaleType.en);
+                      },
+                      child: Text(
+                        'date',
+                        style: TextStyle(color: Colors.blue),
+                      )),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 100.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                  alignment: Alignment.center,
+                ),
+                Container(
+                  child: FlatButton(
+                      ////start time button
+                      onPressed: () {
+                        selectstartTime(context);
+                      },
+                      child: Text(
+                        'start time',
+                        style: TextStyle(color: Colors.blue),
+                      )),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 100.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                  alignment: Alignment.center,
+                ),
+                Container(
+                  child: FlatButton(
+                      ////end time button
+                      onPressed: () {
+                        selectendTime(context);
+                      },
+                      child: Text(
+                        'end time',
+                        style: TextStyle(color: Colors.blue),
+                      )),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 100.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                  alignment: Alignment.center,
                 )
-            ],),
+              ],
+            ),
 
+// select sport ------------------------------------------------------------------------
+            Row(//sport row
+                children: <Widget>[
+              Container(
+                child: Text(
+                  'Sport:',
+                  style: TextStyle(fontSize: 20),
+                ),
+                constraints: BoxConstraints(
+                    maxHeight: 50.0,
+                    maxWidth: 100.0,
+                    minHeight: 50.0,
+                    minWidth: 50.0),
+                alignment: Alignment.center,
+              ),
+              Container(
+                child: DropdownButton<String>(
+                  value: dropdownsport,
+                  iconSize: 20,
+                  onChanged: (String newValue) {
+                    setState(() {
+                      dropdownsport = newValue;
+                    });
+                  },
+                  items: <String>[
+                    'Basketball',
+                    'Soccer',
+                    'Football',
+                    'Baseball'
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                alignment: Alignment.centerRight,
+              )
+            ]),
 
- ///any addition commments
-            TextField(decoration: InputDecoration( hintText: 'Anything else to note:'), controller: myControlMsg,),
+// private or public match ----------------------------------------------------------
+            Row(
+              //private or public match row
+              children: <Widget>[
+                Container(
+                  child: Text("Private or Public match?",
+                      style: TextStyle(fontSize: 20)),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 200.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                  alignment: Alignment.center,
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  child: DropdownButton<String>(
+                    value: dropdownpub,
+                    iconSize: 20,
+                    onChanged: (String newValue) {
+                      setState(() {
+                        dropdownpub = newValue;
+                      });
+                    },
+                    items: <String>['Private', 'Public']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                )
+              ],
+            ),
 
+            ///# of players ---------------------------------------------------------------------------------
+            Row(
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '# of players: ',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  constraints: BoxConstraints(
+                      maxHeight: 50.0,
+                      maxWidth: 200.0,
+                      minHeight: 50.0,
+                      minWidth: 50.0),
+                ),
+                Container(
+                    alignment: Alignment.center,
+                    child: new NumberPicker.integer(
+                        initialValue: _currentNumPlay,
+                        minValue: 3,
+                        maxValue: 25,
+                        onChanged: (newValue) =>
+                            setState(() => _currentNumPlay = newValue)))
+              ],
+            ),
+
+            ///any addition commments
+            TextField(
+              decoration: InputDecoration(hintText: 'Anything else to note:'),
+              controller: myControlMsg,
+            ),
 
 ////text to show the entered information
             Text('addr: $addr'),
@@ -342,8 +442,6 @@ class _MyHomePageState extends State<MyHomePage> {
             Text('End time: $endGameTime'),
             Text('Full start time date/time: ${startGameTime})'),
             Text('${startGameTime.toString()}'),
-
-
           ],
         ),
       ),
