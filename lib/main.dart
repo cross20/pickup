@@ -178,7 +178,21 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
+    
+    // Scaffild for games feed.
     return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: ListView(
+        children: const <Widget>[
+          Card(child: ListTile(title: Text('This is a test'))),
+        ],
+      ),
+    );
+
+    // Scaffold for game entry page.
+    /*return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
@@ -452,6 +466,6 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: Text('Submit'),
       ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    );*/
   }
 }
