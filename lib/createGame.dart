@@ -1,6 +1,8 @@
 /////This is the game creation page
 
 import 'dart:convert';
+import 'package:geocoder/services/base.dart';
+
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +12,13 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';/// google places package
+import 'package:geocoder/geocoder.dart'; // geocoder from address to geopoint
 
 // Global Database linking to firestore
 Database instance = new Database();
 
+// this class is for initializing this page
 class CreateGamePage extends StatefulWidget {
   CreateGamePage({Key key, this.title}) : super(key: key);
 
@@ -22,40 +27,43 @@ class CreateGamePage extends StatefulWidget {
   _CreateGamePageState createState() => _CreateGamePageState();
 }
 
+// this class is for setting the state of the page, it is stateful so widgets within this class can change.
+// This class starts off by defining all the data types and methods I need to properly display and save all game data needed.
+// Then the updateData() method is next, which is called when user hits submit, this is where the Game object is created
+// and sent to the database.
+// Finally is the build method, where all the Widgets are that are needed for this UI
 class _CreateGamePageState extends State<CreateGamePage> {
+  // init value of dropdownmenu
   String dropdownsport = "Basketball";
 
-  ///initial value of sport
+  ///init value of sport
   String dropdownpub = "Public"; //initial value of priv or pub match
 
+  ///controllers for listening to address, msg, sport, pub/priv input
   final myControllerAddr = TextEditingController(); //for the entered address
   final myControlMsg = TextEditingController(); // for the entered Message
   final myControlSport = TextEditingController(); // for sport selection
   final myControlpub = TextEditingController(); // for pub/priv match selection
 
-  //address in string form
+  //init value of user inputted address
   String addr = " ";
 
-  //Notes in string form
+  //init value of user inputted message
   String msg = " ";
 
-  ///# of players
+  //init # of players
   int _currentNumPlay = 3;
 
+  ///init values from Date and times of game
   var gameDate = DateTime.now();
   var startGameTime = DateTime.now();
   var endGameTime = DateTime.now();
 
-  final format = DateFormat("yyyy-MM-dd HH:mm"); //for the DateTimePicker
-
-  ///https://www.youtube.com/watch?v=iX3vCtcHwPE timePicker from that video
+  /// https://www.youtube.com/watch?v=iX3vCtcHwPE timePicker from that video
   TimeOfDay _timeStart = TimeOfDay.now();
   TimeOfDay pickedStart;
 
-  TimeOfDay _timeEnd = TimeOfDay.now();
-  TimeOfDay pickedEnd;
-
-  ///this method and the following method are to show the time picker
+  /// this method is for the creation of the timePicker to select the start time of the game
   Future<Null> selectstartTime(BuildContext context) async {
     pickedStart = await showTimePicker(
       context: context,
@@ -69,6 +77,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
     });
   }
 
+  /// this method is for the timePicker to select the ending time of the game
+  TimeOfDay _timeEnd = TimeOfDay.now();
+  TimeOfDay pickedEnd;
   Future<Null> selectendTime(BuildContext context) async {
     pickedEnd = await showTimePicker(
       context: context,
@@ -82,10 +93,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
     });
   }
 
-  ////this function is called when submit button is hit, this is where I figured the update to database would occur
+  /// this function is called when submit button is hit, this is where values are updated and casted to proper data type
+  /// to be sent to the server
   void _updateData() {
     ///to pass in the timestamp of both startGameTime and endGameTime,
-    
     Timestamp _starttime = Timestamp.fromDate(startGameTime);
     Timestamp _endtime = Timestamp.fromDate(endGameTime);
 
@@ -97,33 +108,33 @@ class _CreateGamePageState extends State<CreateGamePage> {
       priv = true;
 
     setState(() {
-
-      // A game will be pushed to the database everytime the + button is clicked
       ///addr = myControlAddr
       msg = myControlMsg.text;
-      creategame(_endtime, GeoPoint(47.0, 23.2), msg, _currentNumPlay, priv, dropdownsport, _starttime);
-    });
 
+      // A game will be pushed to the database everytime the "submit" button is clicked
+      creategame(_endtime, GeoPoint(47.0, 23.2), msg, _currentNumPlay, priv,
+          dropdownsport, _starttime);
+    });
   }
 
   // Function to create a new game and add to the firestore database.
   void creategame(Timestamp _endtime, GeoPoint _location, String _note,
       int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
     Game game = new Game(
-        endtime:  _endtime,
-        location: _location,
-        note: _note,
-        playersneeded: _playersneeded,
-        private: _private,
-        sport: _sport,
-        starttime: _starttime,
+      endtime: _endtime,
+      location: _location,
+      note: _note,
+      playersneeded: _playersneeded,
+      private: _private,
+      sport: _sport,
+      starttime: _starttime,
     );
     instance.addgame(game.toMap());
   }
 
+  ///all the defined UI
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -132,7 +143,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            ///enter address -------------------------------------------------------------
+            ///address row
             Row(
               children: <Widget>[
                 Container(
@@ -161,7 +172,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
               ],
             ),
 
-            ///time and date row ------------------------------------------------------------
+            ///time and date row
             Row(
               children: <Widget>[
                 Container(
@@ -176,7 +187,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
                 ),
                 Container(
                   child: FlatButton(
-
                       ///date button
                       onPressed: () {
                         DatePicker.showDatePicker(context,
@@ -252,9 +262,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
               ],
             ),
 
-// select sport ------------------------------------------------------------------------
-            Row(//sport row
-                children: <Widget>[
+            /// sport row
+            Row(children: <Widget>[
               Container(
                 child: Text(
                   'Sport:',
@@ -291,10 +300,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
                 alignment: Alignment.centerRight,
               )
             ]),
-
-// private or public match ----------------------------------------------------------
+            // private or public match row
             Row(
-              //private or public match row
               children: <Widget>[
                 Container(
                   child: Text("Private or Public match?",
@@ -328,7 +335,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
               ],
             ),
 
-            ///# of players ---------------------------------------------------------------------------------
+            ///# of players row
             Row(
               children: <Widget>[
                 Container(
@@ -354,13 +361,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
               ],
             ),
 
-            ///any addition commments
+            ///add any addition messages or notes that players should know row
             TextField(
               decoration: InputDecoration(hintText: 'Anything else to note:'),
               controller: myControlMsg,
             ),
 
-////text to show the entered information
+            /// these lines of Text widgets here are simply here to make sure all data is being stored correctly
+            /// this will not go into the final app, I (Casey) just made these to help me see data was being stored properly
             Text('addr: $addr'),
             Text('msg: $msg'),
             Text('sport: $dropdownsport'),
@@ -373,8 +381,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
           ],
         ),
       ),
-
-// the submit button ------------------------------------------------------------
+      // the submit button
       floatingActionButton: FloatingActionButton(
         onPressed: _updateData,
         tooltip: 'Increment',
