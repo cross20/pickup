@@ -178,22 +178,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    final games = <Widget>[];
-    final localGames = instance.getGames();
-    for(var i = 0; i < instance.getGames().length; i++) {
-      games.add(new Card(child: ListTile(title: Text(localGames.elementAt(i).toString()))));
-    }
-
-    // Scaffild for games feed.
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: new ListView(
-        children: games,
-      ),
-    );
-
     // Scaffold for game entry page.
     /*return Scaffold(
       appBar: AppBar(
