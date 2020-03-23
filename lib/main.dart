@@ -12,7 +12,6 @@ import 'createGame.dart';
 import 'splashscreen.dart';
 import 'map.dart';
 import 'signup.dart';
-import 'login.dart';
 import 'authroot.dart';
 import 'authentication.dart';
 
