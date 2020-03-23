@@ -11,6 +11,10 @@ import 'package:intl/intl.dart';
 import 'createGame.dart';
 import 'splashscreen.dart';
 import 'map.dart';
+import 'signup.dart';
+import 'login.dart';
+import 'authroot.dart';
+import 'authentication.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,10 +27,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SplashScreenPage(title: 'Splash Screen'),
+      home: new RootPage(auth: new Auth()),
       routes: <String, WidgetBuilder> {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
-        '/map':(BuildContext context) => MapPage(title: "This is the map")
+        '/map':(BuildContext context) => MapPage(title: "This is the map"),
+        //'/login':(BuildContext context) => LoginPage(),
+        '/signup':(BuildContext context) => SignupPage(),
       }
     );
   }

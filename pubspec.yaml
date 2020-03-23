@@ -14,7 +14,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.3.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -25,6 +25,7 @@ dependencies:
   google_maps_flutter: ^0.5.11
   flutter_google_places: ^0.2.4
   geocoder: ^0.2.1
+  firebase_auth: ^0.15.5+3
     
 
   # The following adds the Cupertino Icons font to your application.
