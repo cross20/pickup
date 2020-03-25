@@ -36,8 +36,16 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
             RaisedButton(onPressed: (){
                    Navigator.pushNamed(context, '/map');
               },
-              child: Text("To map page"))
-
-      ],) ));
+              child: Text("To map page"),
+            ),
+            RaisedButton(onPressed: (){
+              Navigator.pushNamed(context, '/gameFeed');
+            },
+              child: Text("To game feed"),
+            ),
+          ],
+        ) 
+      )
+    );
   }
 }

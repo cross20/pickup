@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'createGame.dart';
 import 'splashscreen.dart';
 import 'map.dart';
+import 'gameFeed.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,7 +27,8 @@ class MyApp extends StatelessWidget {
       home: SplashScreenPage(title: 'Splash Screen'),
       routes: <String, WidgetBuilder> {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
-        '/map':(BuildContext context) => MapPage(title: "This is the map")
+        '/map':(BuildContext context) => MapPage(title: "This is the map"),
+        '/gameFeed':(BuildContext context) => GameFeed(title: "This is the game feed"),
       }
     );
   }
