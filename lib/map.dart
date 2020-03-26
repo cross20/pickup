@@ -12,6 +12,11 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+Database instance = Database();
+
+Set<Marker> markerlist = new Set();
+
+
 class MapPage extends StatefulWidget {
   MapPage({Key key, this.title}) : super(key: key);
 
@@ -19,6 +24,7 @@ class MapPage extends StatefulWidget {
 
   _MapPageState createState() => _MapPageState();
 }
+
 
 class _MapPageState extends State<MapPage> {
   GoogleMapController mapController;
@@ -28,6 +34,30 @@ class _MapPageState extends State<MapPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+
+    setState(() {
+      // Get all the games from the database
+      var currentgamesindatabase = instance.getgame();
+      print(currentgamesindatabase.length);
+
+      for (int i = 0; i < currentgamesindatabase.length; i++) {
+        // Turn each individual game into a game object
+        var gameholder = Game.fromMap(currentgamesindatabase.elementAt(i));
+
+        // Add each game one at a time to the map
+        markerlist.add(new Marker(
+          markerId: MarkerId(i.toString()),
+          position: LatLng(gameholder.location.latitude, gameholder.location.longitude),
+          infoWindow: InfoWindow(title: gameholder.sport),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+        ));
+      }
+
+      // Empty the games
+      currentgamesindatabase.clear();
+    });
   }
 
   @override
@@ -44,7 +74,7 @@ class _MapPageState extends State<MapPage> {
             target: _center,
             zoom: 11.0,
           ),
-          markers: {},
+          markers: markerlist,
         ),
       ),
     );
@@ -52,22 +82,12 @@ class _MapPageState extends State<MapPage> {
 }
 
 ///this function pulls the games from the database, creates a list of markers from that list, and returns the list of markers
-List<Marker> gamemarkers() {
-  ///create the varibles/lists needed
-  Database games = Database();
-  List<Marker> markers;
-  List<dynamic> databaseGames = games.getgame();
 
-  ///iterate with a for loop through the list of database Games, adding a new marker into the marker list every iteration.
-  for (int i = 0; i < databaseGames.length; i++) {
-    markers.add(Marker(
-        markerId: MarkerId("game $i"),
-        position: databaseGames[i].location,
-        infoWindow: InfoWindow(title: "This is a game"),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueOrange,
-        )));
-  }
-
-  return markers;
-}
+Marker testmarker = Marker(
+  markerId: MarkerId('test'),
+  position: LatLng(45.521563, -122.677433),
+  infoWindow: InfoWindow(title: 'Test Game'),
+  icon: BitmapDescriptor.defaultMarkerWithHue(
+    BitmapDescriptor.hueOrange,
+  ),
+);
