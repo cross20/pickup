@@ -61,7 +61,7 @@ class Game {
     );
   }
   
- // Function that allows for deserializaiton of Game Objects from the 
+  // Function that allows for deserializaiton of Game Objects from the 
   // firestore database. When we will be retreiving game information from the
   // database, they will be returned to us in firestore form form. We need this
   // fromfirestore function to easily convert the firestore data to be accessed

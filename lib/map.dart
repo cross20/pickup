@@ -56,7 +56,7 @@ List<Marker> gamemarkers() {
   ///create the varibles/lists needed
   Database games = Database();
   List<Marker> markers;
-  List<dynamic> databaseGames = games.getgame();
+  List<dynamic> databaseGames = games.getGames();
 
   ///iterate with a for loop through the list of database Games, adding a new marker into the marker list every iteration.
   for (int i = 0; i < databaseGames.length; i++) {
