@@ -132,9 +132,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
     });
   }
 
-  //When this page is first created, the _onSearchChanged is added to the 
+  //When this page is first created, the _onSearchChanged is added to the
   // Address controller so that _onSearch can be called every time
   // user changes the input of address
+  // Got the idea for the next four methods from 1ManStartup on YouTube. His two videos on Google Places
   @override
   void initState() {
     super.initState();
@@ -168,7 +169,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
   void displayPrediction(String input) async {
     String baseURL =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json';
-    String type = 'address'; ///what type of autocomplete do we want?
+    String type = 'address';
+
+    ///what type of autocomplete do we want?
 
     String request =
         '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
@@ -179,7 +182,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     // get the body of the response message
     final predictions = response.data['predictions'];
 
-    // List for the results, and the below for loop is so each of the 
+    // List for the results, and the below for loop is so each of the
     // five description elements (in this case addresses) of the predictions array
     // can be gathered and be displayed
     List<String> _displayedResults = [];
@@ -191,7 +194,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
 
     setState(() {
       //Set the _placesList to the returned list of addresses
-      _placesList = _displayedResults; 
+      _placesList = _displayedResults;
     });
   }
 
@@ -225,14 +228,15 @@ class _CreateGamePageState extends State<CreateGamePage> {
         alignment: Alignment.center);
   }
 
-  //This method is for changing the selected address into coordinates. 
+  //This method is for changing the selected address into coordinates.
   // First it builds the URL needed to changed the address
   // Then assigns the response message body to the results variable
-  // Then breaks down the body to the coordinates we need by splitting and deleting 
+  // Then breaks down the body to the coordinates we need by splitting and deleting
   //    many words and symbols
   void getCoordinates(String placesAddr) async {
     String addrURL = placesAddr.replaceAll(" ", "+");
-    String requestURL ="https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
+    String requestURL =
+        "https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
     Response response = await Dio().get(requestURL);
     final results = response.data['results'];
 
@@ -264,7 +268,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
         //function to get the coordinates from selected address
         getCoordinates(_placesList[index]);
         setState(() {
-          myControllerAddr.text = _placesList[index]; //This way the textfield has the selected address showing
+          myControllerAddr.text = _placesList[
+              index]; //This way the textfield has the selected address showing
         });
       },
     ));
@@ -301,7 +306,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
                 ),
               ],
             ),
-            Row( ///To create the List of Addresses from Google Places
+            Row(
+              ///To create the List of Addresses from Google Places
               children: <Widget>[
                 Expanded(
                   child: SizedBox(
