@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'package:geocoder/services/base.dart';
-
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +9,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';/// google places package
-import 'package:geocoder/geocoder.dart'; // geocoder from address to geopoint
+import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:dio/dio.dart';
+
+/// google places packages
+import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
+import 'package:uuid/uuid.dart'; //for session token
 
 // Global Database linking to firestore
 Database instance = new Database();
@@ -33,6 +34,17 @@ class CreateGamePage extends StatefulWidget {
 // and sent to the database.
 // Finally is the build method, where all the Widgets are that are needed for this UI
 class _CreateGamePageState extends State<CreateGamePage> {
+  // This is the Google Maps Place API
+  GoogleMapsPlaces _places =
+      GoogleMapsPlaces(apiKey: "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0");
+  String googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
+  var address;
+  //for the session ID token
+  var uuid = new Uuid();
+  String _sessionToken;
+  List<String> _placesList = [];
+  GeoPoint _location;
+
   // init value of dropdownmenu
   String dropdownsport = "Basketball";
 
@@ -107,13 +119,79 @@ class _CreateGamePageState extends State<CreateGamePage> {
     else
       priv = true;
 
+    //need to reset session token after submit button is selected
+    _sessionToken = null;
+
     setState(() {
-      ///addr = myControlAddr
+      addr = myControllerAddr.text;
       msg = myControlMsg.text;
 
       // A game will be pushed to the database everytime the "submit" button is clicked
-      creategame(_endtime, GeoPoint(47.0, 23.2), msg, _currentNumPlay, priv,
-          dropdownsport, _starttime);
+      creategame(_endtime, _location, msg, _currentNumPlay, priv, dropdownsport,
+          _starttime);
+    });
+  }
+
+  //When this page is first created, the _onSearchChanged is added to the 
+  // Address controller so that _onSearch can be called every time
+  // user changes the input of address
+  @override
+  void initState() {
+    super.initState();
+    myControllerAddr.addListener(_onSearchChanged);
+    _placesList = ["This", "is", "where", "address", "will be"];
+  }
+
+  // this is so that all controllers are done when this route (page) is exited
+  @override
+  void dispose() {
+    myControllerAddr.removeListener(_onSearchChanged);
+    myControllerAddr.dispose();
+    myControlMsg.dispose();
+    myControlpub.dispose();
+    myControlSport.dispose();
+    super.dispose();
+  }
+
+  //_onSearchChanged is so that a new sessionToken can be assigned to the new search
+  // this way the company is not charged for each individual API search, but rather
+  // charged for every session
+  _onSearchChanged() {
+    if (_sessionToken == null) {
+      setState(() {
+        _sessionToken = uuid.v4();
+      });
+    }
+  }
+
+  // A method for a custom Google Places Autocomplete request
+  void displayPrediction(String input) async {
+    String baseURL =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json';
+    String type = 'address'; ///what type of autocomplete do we want?
+
+    String request =
+        '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
+
+    // send http request
+    Response response = await Dio().get(request);
+
+    // get the body of the response message
+    final predictions = response.data['predictions'];
+
+    // List for the results, and the below for loop is so each of the 
+    // five description elements (in this case addresses) of the predictions array
+    // can be gathered and be displayed
+    List<String> _displayedResults = [];
+
+    for (var i = 0; i < predictions.length; i++) {
+      String name = predictions[i]['description'];
+      _displayedResults.add(name);
+    }
+
+    setState(() {
+      //Set the _placesList to the returned list of addresses
+      _placesList = _displayedResults; 
     });
   }
 
@@ -132,6 +210,66 @@ class _CreateGamePageState extends State<CreateGamePage> {
     instance.addgame(game.toMap());
   }
 
+  ///this is so Text Widgets do not have to be re-written multiple times in the Widget build method
+  Container text(String key, double maxWidth) {
+    return Container(
+        child: Text(
+          key,
+          style: TextStyle(fontSize: 20),
+        ),
+        constraints: BoxConstraints(
+            maxHeight: 50.0,
+            minHeight: 50.0,
+            maxWidth: maxWidth,
+            minWidth: 50.0),
+        alignment: Alignment.center);
+  }
+
+  //This method is for changing the selected address into coordinates. 
+  // First it builds the URL needed to changed the address
+  // Then assigns the response message body to the results variable
+  // Then breaks down the body to the coordinates we need by splitting and deleting 
+  //    many words and symbols
+  void getCoordinates(String placesAddr) async {
+    String addrURL = placesAddr.replaceAll(" ", "+");
+    String requestURL ="https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
+    Response response = await Dio().get(requestURL);
+    final results = response.data['results'];
+
+    List<String> res = results
+        .toString()
+        .split('location: ')
+        .toList()[1]
+        .split('location_type')
+        .toList()[0]
+        .replaceAll("[", "")
+        .replaceAll("lat:", "")
+        .replaceAll("{", "")
+        .replaceAll("},", "")
+        .replaceAll(" lng:", "")
+        .split(", ");
+
+    var latitude = double.parse(res[0]);
+    var longitude = double.parse(res[1]);
+
+    _location = GeoPoint(latitude, longitude);
+  }
+
+  //For the list tiles of the list view for the google places search
+  Widget buildListCard(BuildContext context, int index) {
+    return Card(
+        child: ListTile(
+      title: Text(_placesList[index]),
+      onTap: () {
+        //function to get the coordinates from selected address
+        getCoordinates(_placesList[index]);
+        setState(() {
+          myControllerAddr.text = _placesList[index]; //This way the textfield has the selected address showing
+        });
+      },
+    ));
+  }
+
   ///all the defined UI
   @override
   Widget build(BuildContext context) {
@@ -146,22 +284,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
             ///address row
             Row(
               children: <Widget>[
-                Container(
-                  child: Text(
-                    'Address:',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 100.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                  alignment: Alignment.center,
-                ),
+                text("Address:", 100.0),
                 Container(
                   child: TextField(
                     decoration: InputDecoration(hintText: 'Enter Address Here'),
                     controller: myControllerAddr,
+                    onChanged: (text) {
+                      displayPrediction(text);
+                    },
                   ),
                   constraints: BoxConstraints(
                       maxHeight: 50.0,
@@ -171,22 +301,28 @@ class _CreateGamePageState extends State<CreateGamePage> {
                 ),
               ],
             ),
+            Row( ///To create the List of Addresses from Google Places
+              children: <Widget>[
+                Expanded(
+                  child: SizedBox(
+                    height: 100.0,
+                    child: ListView.builder(
+                      itemCount: _placesList.length,
+                      itemBuilder: (BuildContext context, int index) =>
+                          buildListCard(context, index),
+                    ),
+                  ),
+                )
+              ],
+            ),
 
             ///time and date row
             Row(
               children: <Widget>[
-                Container(
-                  //Time/Date text
-                  child: Text('Time/Date:', style: TextStyle(fontSize: 20)),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 100.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                  alignment: Alignment.bottomCenter,
-                ),
+                text("Time/Date:", 100.0),
                 Container(
                   child: FlatButton(
+
                       ///date button
                       onPressed: () {
                         DatePicker.showDatePicker(context,
@@ -264,18 +400,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
 
             /// sport row
             Row(children: <Widget>[
-              Container(
-                child: Text(
-                  'Sport:',
-                  style: TextStyle(fontSize: 20),
-                ),
-                constraints: BoxConstraints(
-                    maxHeight: 50.0,
-                    maxWidth: 100.0,
-                    minHeight: 50.0,
-                    minWidth: 50.0),
-                alignment: Alignment.center,
-              ),
+              text("Sport:", 100.0),
               Container(
                 child: DropdownButton<String>(
                   value: dropdownsport,
@@ -303,16 +428,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
             // private or public match row
             Row(
               children: <Widget>[
-                Container(
-                  child: Text("Private or Public match?",
-                      style: TextStyle(fontSize: 20)),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 200.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                  alignment: Alignment.center,
-                ),
+                text("Private or Public Match?", 200.0),
                 Container(
                   alignment: Alignment.center,
                   child: DropdownButton<String>(
@@ -338,18 +454,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
             ///# of players row
             Row(
               children: <Widget>[
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '# of players: ',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 200.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                ),
+                text("# of players: ", 100.0),
                 Container(
                     alignment: Alignment.center,
                     child: new NumberPicker.integer(
