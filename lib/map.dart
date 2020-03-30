@@ -31,6 +31,35 @@ class _MapPageState extends State<MapPage> {
   /// original code from  https://codelabs.developers.google.com/codelabs/google-maps-in-flutter/#0
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
+  @override
+  void initState(){
+    super.initState();
+
+     // Get all the games from the database
+      var currentgamesindatabase = instance.getgame();
+      print(currentgamesindatabase.length);
+
+      for (int i = 0; i < currentgamesindatabase.length; i++) {
+        // Turn each individual game into a game object
+        var gameholder = Game.fromMap(currentgamesindatabase.elementAt(i));
+
+        // Add each game one at a time to the map
+        markerlist.add(new Marker(
+          markerId: MarkerId(i.toString()),
+          position: LatLng(gameholder.location.latitude, gameholder.location.longitude),
+          infoWindow: InfoWindow(title: gameholder.sport),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueOrange,
+          ),
+        ));
+      }
+
+      // Empty the games
+      currentgamesindatabase.clear();
+
+  }
+
+
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
