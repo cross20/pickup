@@ -14,8 +14,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 Database instance = Database();
 
+// Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
-
 
 class MapPage extends StatefulWidget {
   MapPage({Key key, this.title}) : super(key: key);
@@ -25,7 +25,6 @@ class MapPage extends StatefulWidget {
   _MapPageState createState() => _MapPageState();
 }
 
-
 class _MapPageState extends State<MapPage> {
   GoogleMapController mapController;
 
@@ -34,60 +33,73 @@ class _MapPageState extends State<MapPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
 
-    setState(() {
-      // Get all the games from the database
-      var currentgamesindatabase = instance.getgame();
-      print(currentgamesindatabase.length);
-
-      for (int i = 0; i < currentgamesindatabase.length; i++) {
-        // Turn each individual game into a game object
-        var gameholder = Game.fromMap(currentgamesindatabase.elementAt(i));
-
-        // Add each game one at a time to the map
+// This function takes in a snapshot generated from a streambuilder
+// that allows for constant listening of new datachanges to the database.
+// The function takes in this streambuilder data and accesses location
+// and properties for each game in our database. Then, it takes the data and creates
+// new markers to put on our google map to represent all the games in our database.
+  void updatemarkerlist(AsyncSnapshot<QuerySnapshot> snap) {
+    // Go through all of the games in the database
+    for (int i = 0; i < snap.data.documents.length; i++) {
+      // If the markerlist already contains a game with a certain ID, do not add it again
+      if (markerlist.contains(snap.data.documents.elementAt(i).documentID)) {
+        break;
+      } else {
+        // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
         markerlist.add(new Marker(
-          markerId: MarkerId(i.toString()),
-          position: LatLng(gameholder.location.latitude, gameholder.location.longitude),
-          infoWindow: InfoWindow(title: gameholder.sport),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueOrange,
-          ),
-        ));
+            // Set the markerID as the documentID from the database
+            markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
+            // Get latitude and longitude from the database
+            position: LatLng(
+                snap.data.documents.elementAt(i).data['location'].latitude,
+                snap.data.documents.elementAt(i).data['location'].longitude),
+            infoWindow:
+                // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
+                InfoWindow(
+                    title: snap.data.documents
+                        .elementAt(i)
+                        .data['note']
+                        .toString()),
+            // Default marker is orange
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueOrange,
+            )));
       }
-
-      // Empty the games
-      currentgamesindatabase.clear();
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: _center,
-            zoom: 11.0,
-          ),
-          markers: markerlist,
-        ),
-      ),
-    );
+    // We create the streambuilder here to allow us to constantly listen in to changes to the Games
+    // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
+    // in the materialApp.
+    return new StreamBuilder(
+        stream: Firestore.instance.collection('Games').snapshots(),
+        builder: (context, snapshot) {
+          // Any time the snapshot has new data, update the markerlsit
+          if (snapshot.hasData) {
+            updatemarkerlist(snapshot);
+          } else {
+            return new Text('Loading...');
+          }
+          return MaterialApp(
+            home: Scaffold(
+              appBar: AppBar(
+                title: Text('Maps Sample App'),
+                backgroundColor: Colors.green[700],
+              ),
+              body: GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _center,
+                  zoom: 11.0,
+                ),
+                markers: markerlist,
+              ),
+            ),
+          );
+        });
   }
 }
-
-///this function pulls the games from the database, creates a list of markers from that list, and returns the list of markers
-
-Marker testmarker = Marker(
-  markerId: MarkerId('test'),
-  position: LatLng(45.521563, -122.677433),
-  infoWindow: InfoWindow(title: 'Test Game'),
-  icon: BitmapDescriptor.defaultMarkerWithHue(
-    BitmapDescriptor.hueOrange,
-  ),
-);
