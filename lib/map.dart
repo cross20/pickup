@@ -31,9 +31,6 @@ class _MapPageState extends State<MapPage> {
   /// original code from  https://codelabs.developers.google.com/codelabs/google-maps-in-flutter/#0
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
-
-
-
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
@@ -73,6 +70,63 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  // The document ids of all the current games in the database will
+// go inside this set and be compared to what is in the current markerlist
+// to assist with detection and update of game deletion
+  Set<String> currentgamesdocidlist = new Set();
+
+// The document ids of all the games in the current marker list
+  Set<String> currentmarkeridlist = new Set();
+
+// List that will tell us which markers to remove
+  Set<String> markerstoremovelist = new Set();
+
+  // This function cleans up the data from the map that is outdated.
+  // It tracks which games have been deleted from the database
+  // and need to be deleted from the map marker
+  void checkmarkerlist(AsyncSnapshot<QuerySnapshot> snap) {
+    // Make the snapshot a map so we can access the document IDs by index
+    var docmap = snap.data.documents.asMap();
+
+    // Create a set of document IDs
+    for (int i = 0; i < docmap.length; i++) {
+      currentgamesdocidlist.add(docmap[i].documentID.toString());
+    }
+    // Create a set of the IDs that are in the markerlist
+    for (int a = 0; a < markerlist.length; a++) {
+      currentmarkeridlist
+          .add(markerlist.elementAt(a).markerId.value.toString());
+    }
+
+    // Use the difference function which returns a set of the differences between
+    // the markerIds and the current database document Ids
+    markerstoremovelist = currentmarkeridlist.difference(currentgamesdocidlist);
+
+    // Iterate through the markerlist
+    for (int j = 0; j < markerlist.length; j++) {
+      // Also iterate through the markerstoremovelist
+      for (int b = 0; b < markerstoremovelist.length; b++) {
+        // If the markerlist has an id value that is in the markerstoremove list
+        if (markerlist.elementAt(j).markerId.value.toString() ==
+            markerstoremovelist.elementAt(b).toString()) {
+          print("REMOVING...");
+          print("THIS IS THE ITEM FROM MARKERLIST BEING REMOVED:" +
+              markerlist.elementAt(j).markerId.value.toString());
+          print(
+              "THIS VALUE SHOULD MATCH THE VALUE BEING REMOVED FROM MARKERLIST:" +
+                  markerstoremovelist.elementAt(b).toString());
+          // We need to remove it from the marker list
+          markerlist.remove(markerlist.elementAt(j));
+        }
+      }
+    }
+
+    // Reset all the lists so they are clear and ready for next call.
+    markerstoremovelist.clear();
+    currentgamesdocidlist.clear();
+    currentmarkeridlist.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
@@ -84,6 +138,7 @@ class _MapPageState extends State<MapPage> {
           // Any time the snapshot has new data, update the markerlsit
           if (snapshot.hasData) {
             updatemarkerlist(snapshot);
+            checkmarkerlist(snapshot);
           } else {
             return new Text('Loading...');
           }
