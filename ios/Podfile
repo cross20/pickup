@@ -10,6 +10,9 @@ project 'Runner', {
   'Release' => :release,
 }
 
+  pod 'GoogleMaps'
+  pod 'GooglePlaces'
+
 def parse_KV_file(file, separator='=')
   file_abs_path = File.expand_path(file)
   if !File.exists? file_abs_path
