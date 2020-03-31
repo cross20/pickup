@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'database.dart';
-import 'game.dart';
-
-// Global Database linking to firestore.
-Database instance;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GameFeed extends StatefulWidget {
   GameFeed({Key key, this.title}) : super(key: key);
@@ -16,22 +12,13 @@ class GameFeed extends StatefulWidget {
 class _GameFeedState extends State<GameFeed> {
   // Formats the content that will appear in the list item by item. The content is formatted
   // using a container object.
-  Widget listBody(BuildContext context, int index) {
+  Widget listBody(BuildContext context, DocumentSnapshot document) {
     return new Card(
       child: ListTile(
-        subtitle: Text('$index'),
-        title: Text(getGame(index).sport),
+        title: Text(document['sport']),
+        subtitle: Text('${document.documentID}'),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    if(instance == null) {
-      instance = new Database();
-    }
-    
-    super.initState();
   }
 
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
@@ -78,20 +65,22 @@ class _GameFeedState extends State<GameFeed> {
             ),
             // Display in a list.
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: instance.getGames().length,
-                itemBuilder: (BuildContext context, int index) => listBody(context, index)
-              ),
+              child: StreamBuilder(
+                stream: Firestore.instance.collection('Games').snapshots(),
+                builder: (context, snapshot) {
+                  if(!snapshot.hasData) {
+                    return const Text('Loading...');
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (BuildContext context, int index) => listBody(context, snapshot.data.documents[index])
+                  );
+                },
+              )
             ),
           ],
         ) 
     );
   }
-}
-
-// Converts a game from the database to a Game object. Uses the index for the instance object
-// to access the game from the database.
-Game getGame(int index) {
-  return Game.fromMap(instance.getGames().elementAt(index));
 }
