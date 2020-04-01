@@ -68,7 +68,7 @@ class Game {
   // within our class. Inspired by the link below in the section: From a firestore document.
   // We can either use fromFirestore or fromMap to deserialize our data. I believe we should 
   // use from fromFirestore so that we can assign each game the doc ID key that is generated in the firestore
-  // DB. If we do not use this strategy I am not sure how we will access the key. 
+  // DB. If we do not use this strategy I am not sure how we will access the key.
   // https://fireship.io/lessons/advanced-flutter-firebase/
   factory Game.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data;

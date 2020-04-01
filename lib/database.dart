@@ -17,8 +17,8 @@ class Database {
     firestoreDb.collection('Games').add(game);
   }
 
-  // Returns all the games information in array format.
-  List<dynamic> getGames(){
+ //Returns all the games information in array format
+ List<dynamic> getGames(){
     firestoreDb.collection('Games').snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
     return games;
   }
