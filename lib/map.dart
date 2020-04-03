@@ -28,6 +28,38 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController mapController;
 
+// Variables for the custom google marker icons
+  BitmapDescriptor football;
+  BitmapDescriptor soccer;
+  BitmapDescriptor basketball;
+  BitmapDescriptor baseball;
+
+  @override
+  // Load up the custom marker images on first launch so we can access them
+  // Learned how to do this from this link: https://medium.com/flutter-community/ad-custom-marker-images-for-your-google-maps-in-flutter-68ce627107fc
+  void initState() {
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Basketball.png')
+        .then((onValue) {
+      basketball = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Football.png')
+        .then((onValue) {
+      football = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Soccer.png')
+        .then((onValue) {
+      soccer = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Baseball.png')
+        .then((onValue) {
+      baseball = onValue;
+    });
+  }
+
   /// original code from  https://codelabs.developers.google.com/codelabs/google-maps-in-flutter/#0
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
@@ -47,25 +79,52 @@ class _MapPageState extends State<MapPage> {
       if (markerlist.contains(snap.data.documents.elementAt(i).documentID)) {
         break;
       } else {
+        var icon;
+        // Set the icon based on the proper sport
+        if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Football') {
+          icon = football;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Basketball') {
+          icon = basketball;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Soccer') {
+          icon = soccer;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Baseball') {
+          icon = baseball;
+        }
         // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
         markerlist.add(new Marker(
-            // Set the markerID as the documentID from the database
-            markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
-            // Get latitude and longitude from the database
-            position: LatLng(
-                snap.data.documents.elementAt(i).data['location'].latitude,
-                snap.data.documents.elementAt(i).data['location'].longitude),
-            infoWindow:
-                // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
-                InfoWindow(
-                    title: snap.data.documents
-                        .elementAt(i)
-                        .data['note']
-                        .toString()),
-            // Default marker is orange
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueOrange,
-            )));
+          // Set the markerID as the documentID from the database
+          markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
+          // Get latitude and longitude from the database
+          position: LatLng(
+              snap.data.documents.elementAt(i).data['location'].latitude,
+              snap.data.documents.elementAt(i).data['location'].longitude),
+          // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
+          onTap: () {
+            showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text('Test'),
+                      )
+                    ],
+                  );
+                });
+          },
+
+          infoWindow:
+              // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
+              InfoWindow(
+                  title:
+                      snap.data.documents.elementAt(i).data['note'].toString()),
+          // Default marker is orange
+          icon: icon,
+        ));
       }
     }
   }
