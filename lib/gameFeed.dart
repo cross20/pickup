@@ -13,7 +13,7 @@ class _GameFeedState extends State<GameFeed> {
   /// Formats each individual game to appear in the listView.builder.
   Widget listBody(BuildContext context, DocumentSnapshot document) {
     DateTime startTime = (document['starttime'] as Timestamp).toDate();
-    Duration timeUntilStart = startTime.difference(DateTime.now());
+    DateTime endTime = (document['endtime'] as Timestamp).toDate();
 
     return new Card(
       child: ListTile(
@@ -26,7 +26,7 @@ class _GameFeedState extends State<GameFeed> {
         ),
         subtitle: RichText(
             text: TextSpan(
-          text: timeUntilStart > Duration(seconds: 0) ? 'Starting in ${timeUntilStart.inDays} days' : 'Started',
+          text: _prettyDate(startTime, endTime),
           style: DefaultTextStyle.of(context).style.apply(fontSizeFactor: 1),
         )),
         /* trailing: ,*/ // TODO: Replace text with icon.
@@ -82,10 +82,10 @@ class _GameFeedState extends State<GameFeed> {
             // Display in a list.
             Expanded(
                 child: StreamBuilder(
-              //stream: Firestore.instance.collection('Games').snapshots(),
               stream: Firestore.instance
                   .collection("Games")
                   .orderBy('starttime', descending: false)
+                  .where('endtime', isGreaterThan: new DateTime.now())
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -146,16 +146,45 @@ Route _createRoute(page) {
 
 /// Formats DateTime objects for games. Returns a string which describes a game's current status:
 /// finished, in progress, or starting soon.
-/*String _prettyDate(DateTime startTime, DateTime endTime) {
+String _prettyDate(DateTime startTime, DateTime endTime) {
+  Duration zero = Duration(seconds: 0);
   Duration thirtyMinutes = Duration(minutes: 30);
-  Duration gameDuration = endTime.difference(startTime);
+  Duration oneHour = Duration(hours: 1);
+  Duration oneDay = Duration(days: 1);
 
-  if(endTime.isBefore(DateTime.now())) {
-    return 'Game is finished';
-  } else if(gameDuration) {
-    return 'Game is finishing soon';
+  Duration timeUntilStart = startTime.difference(DateTime.now());
+  Duration timeUntilEnd = endTime.difference(DateTime.now());
+
+  // If the game hasn't started.
+  if (timeUntilStart > zero) {
+    if (timeUntilStart < oneHour) {
+      Duration minutes = Duration(minutes: timeUntilStart.inMinutes);
+      return 'Starting in ${minutes.inMinutes} minutes.';
+    } else if (timeUntilStart < oneDay) {
+      Duration hours = Duration(hours: timeUntilStart.inHours);
+      Duration minutes = timeUntilStart - hours;
+      return 'Starting in ${hours.inHours} hours and ${minutes.inMinutes} minutes.';
+    } else {
+      return 'Starting in ${timeUntilStart.inDays} days.';
+    }
   }
 
-  return 'error calculating time';
+  // If the game hasn't finished.
+  else if (timeUntilEnd > zero) {
+    if (timeUntilEnd <= thirtyMinutes) {
+      return 'Ending soon';
+    } else if (timeUntilEnd < oneHour) {
+      Duration minutes = Duration(minutes: timeUntilEnd.inMinutes);
+      return 'Ending in ${minutes.inMinutes} minutes.';
+    } else {
+      Duration hours = Duration(hours: timeUntilEnd.inHours);
+      Duration minutes = timeUntilEnd - hours;
+      return 'Ending in ${hours.inHours} hours and ${minutes.inMinutes} minutes.';
+    }
+  }
+
+  // If the game has finished.
+  else {
+    return 'Game has finished.';
+  }
 }
-*/
