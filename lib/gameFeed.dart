@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 
 class GameFeed extends StatefulWidget {
   GameFeed({Key key, this.title}) : super(key: key);
@@ -84,7 +85,6 @@ class _GameFeedState extends State<GameFeed> {
                 child: StreamBuilder(
               stream: Firestore.instance
                   .collection("Games")
-                  .orderBy('starttime', descending: false)
                   .where('endtime', isGreaterThan: new DateTime.now())
                   .snapshots(),
               builder: (context, snapshot) {
@@ -111,15 +111,39 @@ class FilterPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        actions: <Widget>[
+          FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Apply')),
+        ],
       ),
       body: Center(
-        child: RaisedButton(
-          child: Text('Back'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        child: StatefulFilterPage(),
       ),
+    );
+  }
+}
+
+class StatefulFilterPage extends StatefulWidget {
+  StatefulFilterPage({Key key}) : super(key: key);
+
+  @override
+  MyStatefulFilterPage createState() => MyStatefulFilterPage();
+}
+
+class MyStatefulFilterPage extends State<StatefulFilterPage> {
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      title: const Text('Basketball'),
+      value: true,
+      onChanged: (bool value) {
+        setState(() {
+          timeDilation = value ? 10.0 : 1.0;
+        });
+      },
     );
   }
 }
