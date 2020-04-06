@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import 'createGame.dart';
 import 'splashscreen.dart';
 import 'map.dart';
-import 'signup.dart';
+import 'signup_login.dart';
 import 'authroot.dart';
 import 'authentication.dart';
 
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
+      theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: new RootPage(auth: new Auth()),
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
         //'/login':(BuildContext context) => LoginPage(),
-        '/signup':(BuildContext context) => SignupPage(),
+        '/signup':(BuildContext context) => SignupLoginPage(),
       }
     );
   }
