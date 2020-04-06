@@ -22,7 +22,7 @@ class _SignupLoginPageState extends State<SignupLoginPage>{
 
   String _email;
   String _password;
-  String _errorMessage ;
+  String _errorMessage="" ;
 
 //returns true if form is validated
   bool validateAndSave() {
@@ -84,7 +84,7 @@ class _SignupLoginPageState extends State<SignupLoginPage>{
       body: Stack(
         children: <Widget>[
           _showForm(),           //displays the forms
-        _showCircularProgress(),
+        //_showCircularProgress(),
         ],
       ),
     );
@@ -103,7 +103,7 @@ class _SignupLoginPageState extends State<SignupLoginPage>{
 
   Widget showEmailInput() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 100.0, 0.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(0.0, 50.0, 0.0, 0.0),
       child: new TextFormField(
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,
@@ -198,14 +198,14 @@ void _showVerifyEmailSentDialog() {
 
       // display error if input for signup/login is invalid
     Widget showErrorMessage() {
-    if (_errorMessage.length > 0 && _errorMessage != null) {
+    if (_errorMessage.length > 0 && _errorMessage != "") {
       return new Text(
         _errorMessage,
         style: TextStyle(
-            fontSize: 13.0,
+            fontSize: 15.0,
             color: Colors.red,
-            height: 1.0,
-            fontWeight: FontWeight.w300),
+            height: 1.5,
+            fontWeight: FontWeight.w500),
       );
     } else {
       return new Container(
@@ -223,12 +223,12 @@ void _showVerifyEmailSentDialog() {
           child: new ListView(
             shrinkWrap: true,
             children: <Widget>[
-              
+              showErrorMessage(),
               showEmailInput(),
               showPasswordInput(),
               showPrimaryButton(),
               showSecondaryButton(),
-              //showErrorMessage(),
+             
             ],
           ),
         ));
