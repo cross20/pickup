@@ -11,6 +11,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 Database instance = Database();
 
@@ -28,16 +29,48 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController mapController;
 
+  // Default that the user does not have location services turned on 
+  bool locationservices = false;
+
+  // This is the variable that will store the position
+  // where the googlemap camera will go to
+  static LatLng _userlocation;
+
 // Variables for the custom google marker icons
   BitmapDescriptor football;
   BitmapDescriptor soccer;
   BitmapDescriptor basketball;
   BitmapDescriptor baseball;
 
+// This function gets the users current location using their
+// devices location.
+// https://stackoverflow.com/questions/57657152/how-to-set-initial-camera-position-to-the-current-devices-latitude-and-longitud
+// The above link helped me understand how to do this.
+  void _getUserLocation() async {
+    _userlocation = null;
+    // TODO: Check if user is allowing us to access their location. 
+  
+  if (locationservices == true) {
+      Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    setState(() {
+      _userlocation = LatLng(position.latitude, position.longitude);
+    });
+  } else {
+      // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
+      setState(() {
+        _userlocation = LatLng(45.502800, -122.779533);
+      });
+      
+  }
+    
+  }
+
   @override
-  // Load up the custom marker images on first launch so we can access them
+  // Load up the custom marker images on first map build so we can access them
   // Learned how to do this from this link: https://medium.com/flutter-community/ad-custom-marker-images-for-your-google-maps-in-flutter-68ce627107fc
   void initState() {
+    super.initState();
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(devicePixelRatio: 2.5), 'assets/Basketball.png')
         .then((onValue) {
@@ -58,10 +91,9 @@ class _MapPageState extends State<MapPage> {
         .then((onValue) {
       baseball = onValue;
     });
+    // Initialize the current user location on first map build
+    _getUserLocation();
   }
-
-  /// original code from  https://codelabs.developers.google.com/codelabs/google-maps-in-flutter/#0
-  final LatLng _center = const LatLng(45.521563, -122.677433);
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -110,7 +142,8 @@ class _MapPageState extends State<MapPage> {
                   return Column(
                     children: <Widget>[
                       ListTile(
-                        title: Text('Test'),
+                        title: Text(
+                            'This is where a game details preview will pop up.'),
                       )
                     ],
                   );
@@ -199,7 +232,16 @@ class _MapPageState extends State<MapPage> {
             updatemarkerlist(snapshot);
             checkmarkerlist(snapshot);
           } else {
-            return new Text('Loading...');
+            return Container(
+                      child: Center(
+                        child: Text(
+                          'loading game data..',
+                          style: TextStyle(
+                              fontFamily: 'Avenir-Medium',
+                              color: Colors.grey[400]),
+                        ),
+                      ),
+                    );
           }
           return MaterialApp(
             home: Scaffold(
@@ -207,14 +249,27 @@ class _MapPageState extends State<MapPage> {
                 title: Text('Maps Sample App'),
                 backgroundColor: Colors.green[700],
               ),
-              body: GoogleMap(
-                onMapCreated: _onMapCreated,
-                initialCameraPosition: CameraPosition(
-                  target: _center,
-                  zoom: 11.0,
-                ),
-                markers: markerlist,
-              ),
+              // If the initial position is null, return a container saying that we are loading the map.
+              body: _userlocation == null
+                  ? Container(
+                      child: Center(
+                        child: Text(
+                          'loading map..',
+                          style: TextStyle(
+                              fontFamily: 'Avenir-Medium',
+                              color: Colors.grey[400]),
+                        ),
+                      ),
+                    )
+                  // Once the initial position is not null, create the google map.
+                  : GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: _userlocation,
+                        zoom: 11.0,
+                      ),
+                      markers: markerlist,
+                    ),
             ),
           );
         });

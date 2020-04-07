@@ -25,7 +25,9 @@ dependencies:
   google_maps_flutter: ^0.5.11
   flutter_google_places: ^0.2.4
   geocoder: ^0.2.1
+  geolocator: ^5.3.1
   google_maps_webservice: ^0.0.16
+  location: ^3.0.2
   dio: ^2.1.13 # this dio package is for custom google places search
   uuid: ^2.0.1 # for the session tokens 
     
