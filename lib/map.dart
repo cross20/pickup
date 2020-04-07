@@ -29,7 +29,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController mapController;
 
-  // Default that the user does not have location services turned on 
+  // Default that the user does not have location services turned on
   bool locationservices = false;
 
   // This is the variable that will store the position
@@ -48,22 +48,20 @@ class _MapPageState extends State<MapPage> {
 // The above link helped me understand how to do this.
   void _getUserLocation() async {
     _userlocation = null;
-    // TODO: Check if user is allowing us to access their location. 
-  
-  if (locationservices == true) {
+    // TODO: Check if user is allowing us to access their location.
+
+    if (locationservices == true) {
       Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-    setState(() {
-      _userlocation = LatLng(position.latitude, position.longitude);
-    });
-  } else {
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      setState(() {
+        _userlocation = LatLng(position.latitude, position.longitude);
+      });
+    } else {
       // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
       setState(() {
         _userlocation = LatLng(45.502800, -122.779533);
       });
-      
-  }
-    
+    }
   }
 
   @override
@@ -232,16 +230,24 @@ class _MapPageState extends State<MapPage> {
             updatemarkerlist(snapshot);
             checkmarkerlist(snapshot);
           } else {
-            return Container(
-                      child: Center(
-                        child: Text(
-                          'loading game data..',
-                          style: TextStyle(
-                              fontFamily: 'Avenir-Medium',
-                              color: Colors.grey[400]),
-                        ),
+            // Show this loading map screen when we are loading in the database data
+            return MaterialApp(
+              home: Scaffold(
+                  appBar: AppBar(
+                    title: Text('Maps Sample App'),
+                    backgroundColor: Colors.green[700],
+                  ),
+                  body: Container(
+                    child: Center(
+                      child: Text(
+                        'loading map..',
+                        style: TextStyle(
+                            fontFamily: 'Avenir-Medium',
+                            color: Colors.grey[400]),
                       ),
-                    );
+                    ),
+                  )),
+            );
           }
           return MaterialApp(
             home: Scaffold(
