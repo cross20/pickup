@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
+
+/// Stores a boolean value for each [sport] that determines wheather or not a game should
+/// be loaded from the database.
+Map includeSport = {
+  'baseball': true,
+  'basketball': true,
+  'football': true,
+  'soccer': true
+};
 
 class GameFeed extends StatefulWidget {
   GameFeed({Key key, this.title}) : super(key: key);
@@ -44,10 +52,11 @@ class _GameFeedState extends State<GameFeed> {
           // search location.
           actions: <Widget>[
             FlatButton(
-              onPressed:
-                  null, // TODO: Display a search bar and keyboard to search for a location.
-              child: Text('Location'), // TODO: Replace text with icon.
-            ),
+                onPressed:
+                    null, // TODO: Display a search bar and keyboard to search for a location.
+                child: Icon(
+                  Icons.location_on,
+                )),
             Expanded(
               // TODO: Replace button bar with tab bar.
               child: ButtonBar(
@@ -74,7 +83,9 @@ class _GameFeedState extends State<GameFeed> {
               onPressed: () {
                 Navigator.of(context).push(_createRoute(FilterPage()));
               },
-              child: Text('Filter'), // TODO: Replace text with icon.
+              child: Icon(
+                Icons.filter_list,
+              ),
             )
           ],
         ),
@@ -83,10 +94,7 @@ class _GameFeedState extends State<GameFeed> {
             // Display in a list.
             Expanded(
                 child: StreamBuilder(
-              stream: Firestore.instance
-                  .collection("Games")
-                  .where('endtime', isGreaterThan: new DateTime.now())
-                  .snapshots(),
+              stream: gamesSnapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Text('Loading...');
@@ -113,15 +121,25 @@ class FilterPage extends StatelessWidget {
         automaticallyImplyLeading: false,
         actions: <Widget>[
           FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Icon(
+              Icons.close,
+            ),
+          ),
+          Spacer(),
+          FlatButton(
               onPressed: () {
+                // TODO: Figure out how to refresh the games that appear in the listView.builder.
                 Navigator.pop(context);
               },
-              child: Text('Apply')),
+              child: Icon(
+                Icons.done,
+              )),
         ],
       ),
-      body: Center(
-        child: StatefulFilterPage(),
-      ),
+      body: StatefulFilterPage(),
     );
   }
 }
@@ -130,20 +148,52 @@ class StatefulFilterPage extends StatefulWidget {
   StatefulFilterPage({Key key}) : super(key: key);
 
   @override
-  MyStatefulFilterPage createState() => MyStatefulFilterPage();
+  _StatefulFilterPage createState() => _StatefulFilterPage();
 }
 
-class MyStatefulFilterPage extends State<StatefulFilterPage> {
+class _StatefulFilterPage extends State<StatefulFilterPage> {
   @override
   Widget build(BuildContext context) {
-    return CheckboxListTile(
-      title: const Text('Basketball'),
-      value: true,
-      onChanged: (bool value) {
-        setState(() {
-          timeDilation = value ? 10.0 : 1.0;
-        });
-      },
+    return ListView(
+      children: <Widget>[
+        Text('Game Types'),
+        CheckboxListTile(
+          title: const Text('Basketball'),
+          value: includeSport['basketball'],
+          onChanged: (bool value) {
+            setState(() {
+              includeSport['basketball'] = value;
+            });
+          },
+        ),
+        CheckboxListTile(
+          title: const Text('Football'),
+          value: includeSport['football'],
+          onChanged: (bool value) {
+            setState(() {
+              includeSport['football'] = value;
+            });
+          },
+        ),
+        CheckboxListTile(
+          title: const Text('Soccer'),
+          value: includeSport['soccer'],
+          onChanged: (bool value) {
+            setState(() {
+              includeSport['soccer'] = value;
+            });
+          },
+        ),
+        CheckboxListTile(
+          title: const Text('Baseball'),
+          value: includeSport['baseball'],
+          onChanged: (bool value) {
+            setState(() {
+              includeSport['baseball'] = value;
+            });
+          },
+        ),
+      ],
     );
   }
 }
@@ -166,6 +216,44 @@ Route _createRoute(page) {
       );
     },
   );
+}
+
+Stream<QuerySnapshot> gamesSnapshots() {
+  //return Firestore.instance.collection('Games').where('endtime', isGreaterThan: new DateTime.now()).snapshots();
+
+  CollectionReference col = Firestore.instance.collection('Games');
+
+  bool includeSports = false;
+  for (bool shouldInclude in includeSport.values) {
+    if (shouldInclude) {
+      includeSports = true;
+    }
+  }
+
+  if (!includeSports) {
+    return col
+        .where('sport', isEqualTo: 'None')
+        .where('endtime', isGreaterThan: new DateTime.now())
+        .snapshots();
+  }
+
+  if (includeSport['baseball']) {
+    col.where('sport', isEqualTo: 'Baseball');
+  }
+
+  if (includeSport['basketball']) {
+    col.where('sport', isEqualTo: 'Basketball');
+  }
+
+  if (includeSport['football']) {
+    col.where('sport', isEqualTo: 'Football');
+  }
+
+  if (includeSport['soccer']) {
+    col.where('sport', isEqualTo: 'Soccer');
+  }
+
+  return col.where('endtime', isGreaterThan: new DateTime.now()).snapshots();
 }
 
 /// Formats DateTime objects for games. Returns a string which describes a game's current status:
