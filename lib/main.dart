@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder> {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
-        '/gameFeed':(BuildContext context) => GameFeed(title: "Games"),
+        '/gameFeed':(BuildContext context) => GameFeedState(title: "Games"),
       }
     );
   }

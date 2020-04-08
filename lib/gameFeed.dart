@@ -10,15 +10,83 @@ Map includeSport = {
   'soccer': true
 };
 
-class GameFeed extends StatefulWidget {
-  GameFeed({Key key, this.title}) : super(key: key);
+class GameFeedState extends StatefulWidget {
+  GameFeedState({Key key, this.title}) : super(key: key);
 
   final String title;
 
   _GameFeedState createState() => _GameFeedState();
 }
 
-class _GameFeedState extends State<GameFeed> {
+class _GameFeedState extends State<GameFeedState> {
+  // The main body for the game feed. Uses a column to manage multiple widgets in the body.
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        // Choose how to view games. Either in list or map form. Select filter options and
+        // search location.
+        actions: <Widget>[
+          FlatButton(
+              onPressed:
+                  null, // TODO: Display a search bar and keyboard to search for a location.
+              child: Icon(
+                Icons.location_on,
+              )),
+          Expanded(
+            // TODO: Replace button bar with tab bar.
+            child: ButtonBar(
+              alignment: MainAxisAlignment.center,
+              buttonMinWidth: 80.0,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: null, // TODO: Load the list view.
+                  child: Text(
+                    'List',
+                  ),
+                ),
+                RaisedButton(
+                  onPressed: null, // TODO: Load the map view.
+                  child: Text(
+                    'Map',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
+          FlatButton(
+            onPressed: () {
+              Navigator.of(context).push(_createRoute(FilterPage()));
+            },
+            child: Icon(
+              Icons.filter_list,
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          // Display in a list.
+          Expanded(
+              child: StreamBuilder(
+            stream: gamesSnapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Text('Loading...');
+              }
+              return ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: snapshot.data.documents.length,
+                  itemBuilder: (BuildContext context, int index) =>
+                      listBody(context, snapshot.data.documents[index]));
+            },
+          )),
+        ],
+      ),
+    );
+  }
+
   /// Formats each individual game to appear in the listView.builder.
   Widget listBody(BuildContext context, DocumentSnapshot document) {
     DateTime startTime = (document['starttime'] as Timestamp).toDate();
@@ -42,72 +110,19 @@ class _GameFeedState extends State<GameFeed> {
       ),
     );
   }
+}
 
-  // The main body for the game feed. Uses a column to manage multiple widgets in the body.
+class GameFeed extends StatefulWidget {
+  GameFeed({Key key}) : super(key: key);
+
+  @override
+  _GameFeed createState() => _GameFeed();
+}
+
+class _GameFeed extends State<GameFeed> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          // Choose how to view games. Either in list or map form. Select filter options and
-          // search location.
-          actions: <Widget>[
-            FlatButton(
-                onPressed:
-                    null, // TODO: Display a search bar and keyboard to search for a location.
-                child: Icon(
-                  Icons.location_on,
-                )),
-            Expanded(
-              // TODO: Replace button bar with tab bar.
-              child: ButtonBar(
-                alignment: MainAxisAlignment.center,
-                buttonMinWidth: 80.0,
-                children: <Widget>[
-                  RaisedButton(
-                    onPressed: null, // TODO: Load the list view.
-                    child: Text(
-                      'List',
-                    ),
-                  ),
-                  RaisedButton(
-                    onPressed: null, // TODO: Load the map view.
-                    child: Text(
-                      'Map',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
-            FlatButton(
-              onPressed: () {
-                Navigator.of(context).push(_createRoute(FilterPage()));
-              },
-              child: Icon(
-                Icons.filter_list,
-              ),
-            )
-          ],
-        ),
-        body: Column(
-          children: <Widget>[
-            // Display in a list.
-            Expanded(
-                child: StreamBuilder(
-              stream: gamesSnapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Text('Loading...');
-                }
-                return ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (BuildContext context, int index) =>
-                        listBody(context, snapshot.data.documents[index]));
-              },
-            )),
-          ],
-        ));
+    return Text('temp');
   }
 }
 
@@ -155,8 +170,8 @@ class _StatefulFilterPage extends State<StatefulFilterPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      physics: NeverScrollableScrollPhysics(),
       children: <Widget>[
-        Text('Game Types'),
         CheckboxListTile(
           title: const Text('Basketball'),
           value: includeSport['basketball'],
@@ -193,6 +208,7 @@ class _StatefulFilterPage extends State<StatefulFilterPage> {
             });
           },
         ),
+        Text('Date picker goes here') // TODO: Implement dateTimePicker here.
       ],
     );
   }
