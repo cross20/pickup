@@ -33,7 +33,7 @@ class Auth implements BaseAuth {
   Future<String> signUp(String email, String password) async {
     AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
-        print ("so far so good");
+        
     FirebaseUser user = result.user;
     print(user.uid);
     return user.uid;
@@ -56,6 +56,8 @@ class Auth implements BaseAuth {
 
   Future<bool> isEmailVerified() async {
     FirebaseUser user = await _firebaseAuth.currentUser();
+    print ("user.isEmailVerified");
     return user.isEmailVerified;
+    
   }
 }
