@@ -74,8 +74,15 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
               RaisedButton(onPressed: (){
                    Navigator.pushNamed(context, '/signup');
               },
-              child: Text("To signup page"))
+              child: Text("To signup page")),
+
+              RaisedButton(onPressed: (){
+              Navigator.pushNamed(context, '/gameFeed');
+            },
+              child: Text("To game feed"),
+            ),
 
       ],) ));
+              
   }
 }

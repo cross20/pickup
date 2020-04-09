@@ -14,6 +14,7 @@ import 'map.dart';
 import 'signup_login.dart';
 import 'authroot.dart';
 import 'authentication.dart';
+import 'gameFeed.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),
+        '/gameFeed':(BuildContext context) => GameFeedState(title: "Games"),
       }
     );
   }

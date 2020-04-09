@@ -5,19 +5,21 @@ import 'game.dart';
 
 // This class will store the database reference we are using.
 class Database {
-  final firestore_db = Firestore.instance;
+  final firestoreDb = Firestore.instance;
+  var games;
 
 // Default constructor
-  Database();
-
-  void addgame(var game) {
-    firestore_db.collection('Games').add(game);
+  Database() {
+    games = [];
   }
 
-  //Returns all the games information in the array called games
- var games=[] ;
- List<dynamic> getgame(){
-    firestore_db.collection('Games').snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
+  void addgame(var game) {
+    firestoreDb.collection('Games').add(game);
+  }
+
+ //Returns all the games information in array format
+ List<dynamic> getGames(){
+    firestoreDb.collection('Games').snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
     return games;
   }
 }
