@@ -71,7 +71,7 @@ class _GameFeedState extends State<GameFeedState> {
       return 
             Expanded(
               child: StreamBuilder(
-                stream: Firestore.instance.collection('Games').snapshots(),
+                stream: gamesSnapshots(),
                 builder: (context, snapshot) {
                   if(!snapshot.hasData) {
                     return const Text('Loading...');
