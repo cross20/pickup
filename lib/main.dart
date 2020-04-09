@@ -9,9 +9,11 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'createGame.dart';
+import 'gameFeed.dart';
 import 'splashscreen.dart';
 import 'map.dart';
 import 'gameFeed.dart';
+import 'splashscreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -24,11 +26,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SplashScreenPage(title: 'Splash Screen'),
+      initialRoute: '/',
       routes: <String, WidgetBuilder> {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
         '/gameFeed':(BuildContext context) => GameFeed(title: "Games"),
+        '/':(BuildContext context) => GameFeed(title:"Home Feed"),
       }
     );
   }

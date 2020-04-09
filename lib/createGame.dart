@@ -11,6 +11,7 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:dio/dio.dart';
+import 'appUI.dart';
 
 /// google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -275,6 +276,11 @@ class _CreateGamePageState extends State<CreateGamePage> {
     ));
   }
 
+  ///For the selection of bottom nav items
+   void _onBotNavTap(int index) {
+      newRoute(index, context);
+    }
+
   ///all the defined UI
   @override
   Widget build(BuildContext context) {
@@ -477,18 +483,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
               decoration: InputDecoration(hintText: 'Anything else to note:'),
               controller: myControlMsg,
             ),
-
-            /// these lines of Text widgets here are simply here to make sure all data is being stored correctly
-            /// this will not go into the final app, I (Casey) just made these to help me see data was being stored properly
-            Text('addr: $addr'),
-            Text('msg: $msg'),
-            Text('sport: $dropdownsport'),
-            Text('pub/priv: $dropdownpub'),
-            Text('num of players: $_currentNumPlay'),
-            Text('Start time: $_timeStart'),
-            Text('End time: $endGameTime'),
-            Text('Full start time date/time: ${startGameTime})'),
-            Text('${startGameTime.toString()}'),
           ],
         ),
       ),
@@ -497,7 +491,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
         onPressed: _updateData,
         tooltip: 'Increment',
         child: Text('Submit'),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+      bottomNavigationBar: botNavBar(2, _onBotNavTap, context), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
