@@ -1,6 +1,5 @@
-///file just for the map
-///
 ///This file is everything in map.dart, just no longer has the Scaffold/Material App Widget
+///file just for the map
 import 'dart:convert';
 import 'game.dart';
 import 'database.dart';
@@ -13,6 +12,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 Database instance = Database();
 
@@ -20,7 +20,9 @@ Database instance = Database();
 Set<Marker> markerlist = new Set();
 
 class FindGameMap extends StatefulWidget {
-  FindGameMap({Key key}) : super(key: key);
+  FindGameMap({Key key, this.title}) : super(key: key);
+
+  final String title;
 
   _FindGameMapState createState() => _FindGameMapState();
 }
@@ -28,8 +30,69 @@ class FindGameMap extends StatefulWidget {
 class _FindGameMapState extends State<FindGameMap> {
   GoogleMapController mapController;
 
-  /// original code from  https://codelabs.developers.google.com/codelabs/google-maps-in-flutter/#0
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  // Default that the user does not have location services turned on
+  bool locationservices = false;
+
+  // This is the variable that will store the position
+  // where the googlemap camera will go to
+  static LatLng _userlocation;
+
+// Variables for the custom google marker icons
+  BitmapDescriptor football;
+  BitmapDescriptor soccer;
+  BitmapDescriptor basketball;
+  BitmapDescriptor baseball;
+
+// This function gets the users current location using their
+// devices location.
+// https://stackoverflow.com/questions/57657152/how-to-set-initial-camera-position-to-the-current-devices-latitude-and-longitud
+// The above link helped me understand how to do this.
+  void _getUserLocation() async {
+    _userlocation = null;
+    // TODO: Check if user is allowing us to access their location.
+
+    if (locationservices == true) {
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      setState(() {
+        _userlocation = LatLng(position.latitude, position.longitude);
+      });
+    } else {
+      // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
+      setState(() {
+        _userlocation = LatLng(45.502800, -122.779533);
+      });
+    }
+  }
+
+  @override
+  // Load up the custom marker images on first map build so we can access them
+  // Learned how to do this from this link: https://medium.com/flutter-community/ad-custom-marker-images-for-your-google-maps-in-flutter-68ce627107fc
+  void initState() {
+    super.initState();
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Basketball.png')
+        .then((onValue) {
+      basketball = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Football.png')
+        .then((onValue) {
+      football = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Soccer.png')
+        .then((onValue) {
+      soccer = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Baseball.png')
+        .then((onValue) {
+      baseball = onValue;
+    });
+    // Initialize the current user location on first map build
+    _getUserLocation();
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -47,25 +110,53 @@ class _FindGameMapState extends State<FindGameMap> {
       if (markerlist.contains(snap.data.documents.elementAt(i).documentID)) {
         break;
       } else {
+        var icon;
+        // Set the icon based on the proper sport
+        if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Football') {
+          icon = football;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Basketball') {
+          icon = basketball;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Soccer') {
+          icon = soccer;
+        } else if (snap.data.documents.elementAt(i).data['sport'].toString() ==
+            'Baseball') {
+          icon = baseball;
+        }
         // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
         markerlist.add(new Marker(
-            // Set the markerID as the documentID from the database
-            markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
-            // Get latitude and longitude from the database
-            position: LatLng(
-                snap.data.documents.elementAt(i).data['location'].latitude,
-                snap.data.documents.elementAt(i).data['location'].longitude),
-            infoWindow:
-                // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
-                InfoWindow(
-                    title: snap.data.documents
-                        .elementAt(i)
-                        .data['note']
-                        .toString()),
-            // Default marker is orange
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueOrange,
-            )));
+          // Set the markerID as the documentID from the database
+          markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
+          // Get latitude and longitude from the database
+          position: LatLng(
+              snap.data.documents.elementAt(i).data['location'].latitude,
+              snap.data.documents.elementAt(i).data['location'].longitude),
+          // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
+          onTap: () {
+            showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text(
+                            'This is where a game details preview will pop up.'),
+                      )
+                    ],
+                  );
+                });
+          },
+
+          infoWindow:
+              // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
+              InfoWindow(
+                  title:
+                      snap.data.documents.elementAt(i).data['note'].toString()),
+          // Default marker is orange
+          icon: icon,
+        ));
       }
     }
   }
@@ -140,17 +231,41 @@ class _FindGameMapState extends State<FindGameMap> {
             updatemarkerlist(snapshot);
             checkmarkerlist(snapshot);
           } else {
-            return new Text('Loading...');
+            // Show this loading map screen when we are loading in the database data
+            return MaterialApp(
+              home: Container(
+                    child: Center(
+                      child: Text(
+                        'loading map..',
+                        style: TextStyle(
+                            fontFamily: 'Avenir-Medium',
+                            color: Colors.grey[400]),
+                      ),
+                    ),
+                  ),
+            );
           }
-          return //MaterialApp(
-              //home: 
-              GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 11.0,
-            ),
-            markers: markerlist,
+          return MaterialApp(
+            home: _userlocation == null
+                  ? Container(
+                      child: Center(
+                        child: Text(
+                          'loading map..',
+                          style: TextStyle(
+                              fontFamily: 'Avenir-Medium',
+                              color: Colors.grey[400]),
+                        ),
+                      ),
+                    )
+                  // Once the initial position is not null, create the google map.
+                  : GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: _userlocation,
+                        zoom: 11.0,
+                      ),
+                      markers: markerlist,
+                    ),
           );
         });
   }
