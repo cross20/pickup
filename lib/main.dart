@@ -12,6 +12,9 @@ import 'createGame.dart';
 import 'gameFeed.dart';
 import 'splashscreen.dart';
 import 'map.dart';
+import 'signup_login.dart';
+import 'authroot.dart';
+import 'authentication.dart';
 import 'gameFeed.dart';
 import 'splashscreen.dart';
 
@@ -23,15 +26,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
+      theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      home: new RootPage(auth: new Auth()),
       routes: <String, WidgetBuilder> {
         '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
-        '/gameFeed':(BuildContext context) => GameFeed(title: "Games"),
-        '/':(BuildContext context) => GameFeed(title:"Home Feed"),
+        //'/login':(BuildContext context) => LoginPage(),
+        '/signup':(BuildContext context) => SignupLoginPage(),
+        '/gameFeed':(BuildContext context) => GameFeedState(title: "Games"),
       }
     );
   }
