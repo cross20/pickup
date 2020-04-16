@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'authentication.dart';
 import 'dart:async';
 
+MediaQueryData globaldevicestats;
 
 class SplashScreenPage extends StatefulWidget {
   SplashScreenPage({Key key, this.title, this.auth, this.userId, this.logoutCallback}): super(key:key);
@@ -48,6 +49,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
   @override
   Widget build(BuildContext context) {
     getUser();
+    globaldevicestats = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.title),
       actions: <Widget>[

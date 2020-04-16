@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+// For global device stats
+import 'splashscreen.dart';
 
 Database instance = Database();
 
@@ -70,22 +72,22 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Basketball.png')
+            ImageConfiguration(devicePixelRatio: globaldevicestats.devicePixelRatio), 'assets/Basketball.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Football.png')
+            ImageConfiguration(devicePixelRatio: globaldevicestats.devicePixelRatio), 'assets/Football.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Soccer.png')
+            ImageConfiguration(devicePixelRatio: globaldevicestats.devicePixelRatio), 'assets/Soccer.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Baseball.png')
+            ImageConfiguration(devicePixelRatio: globaldevicestats.devicePixelRatio), 'assets/Baseball.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -138,11 +140,22 @@ class _MapPageState extends State<MapPage> {
                 context: context,
                 builder: (context) {
                   return Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                        title: Text(
-                            'This is where a game details preview will pop up.'),
-                      )
+                        leading: new Image.asset('assets/Baseball.png'),
+                        title: Text('Game at 1023 N Main Street',
+                            style: TextStyle(fontSize: 20)),
+                        subtitle: Text(
+                            'Thursday, Apr 16, 2020\nFrom 12:30PM to 1:30PM\nPlayers needed: 5\nPlayers currently in game: 5',
+                            style: TextStyle(fontSize: 15)),
+                        trailing: RaisedButton(
+                            onPressed: () {
+                              // Navigate to the game detail page
+                            },
+                            child: Text("View Game Lobby")),
+                        isThreeLine: true,
+                      ),
                     ],
                   );
                 });
@@ -223,7 +236,7 @@ class _MapPageState extends State<MapPage> {
     // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
     // in the materialApp.
     return new StreamBuilder(
-        stream: Firestore.instance.collection('Games').snapshots(),
+        stream: Firestore.instance.collection('Games').where('endtime', isGreaterThan: new DateTime.now()).snapshots(),
         builder: (context, snapshot) {
           // Any time the snapshot has new data, update the markerlsit
           if (snapshot.hasData) {
