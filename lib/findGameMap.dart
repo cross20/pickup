@@ -13,6 +13,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+// For global device stats
+import 'splashscreen.dart';
 
 Database instance = Database();
 
@@ -68,25 +70,35 @@ class _FindGameMapState extends State<FindGameMap> {
   @override
   // Load up the custom marker images on first map build so we can access them
   // Learned how to do this from this link: https://medium.com/flutter-community/ad-custom-marker-images-for-your-google-maps-in-flutter-68ce627107fc
+  // The devicepixelratio is being set to match the user screen size which we gather in the global variable
+  // global device stats.
   void initState() {
     super.initState();
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Basketball.png')
+            ImageConfiguration(
+                devicePixelRatio: globaldevicestats.devicePixelRatio),
+            'assets/Basketball.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Football.png')
+            ImageConfiguration(
+                devicePixelRatio: globaldevicestats.devicePixelRatio),
+            'assets/Football.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Soccer.png')
+            ImageConfiguration(
+                devicePixelRatio: globaldevicestats.devicePixelRatio),
+            'assets/Soccer.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(devicePixelRatio: 2.5), 'assets/Baseball.png')
+            ImageConfiguration(
+                devicePixelRatio: globaldevicestats.devicePixelRatio),
+            'assets/Baseball.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -135,15 +147,35 @@ class _FindGameMapState extends State<FindGameMap> {
               snap.data.documents.elementAt(i).data['location'].longitude),
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
+            // Here is what happens when a marker is pressed on.
+            // The showModalbottom sheet slides up a new view
             showModalBottomSheet(
                 context: context,
                 builder: (context) {
                   return Column(
+                    // The sheet will only be as big as its widgets
+                    mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                        title: Text(
-                            'This is where a game details preview will pop up.'),
-                      )
+                        // For now we are just loading the baseball image
+                        leading: new Image.asset('assets/Baseball.png'),
+                        // Need to pull the lat/lng so we can display the actual address
+                        title: Text('Game at 1023 N Main Street',
+                            // The sizing of this ListTile will be determined by FontSize.
+                            // We need to play around with fontsize to figure out what
+                            // looks best across all devices.
+                            style: TextStyle(fontSize: 20)),
+                        // In the future, the subtitle will pull values from the DB
+                        subtitle: Text(
+                            'Thursday, Apr 16, 2020\nFrom 12:30PM to 1:30PM\nPlayers needed: 5\nPlayers currently in game: 5',
+                            style: TextStyle(fontSize: 15)),
+                        trailing: RaisedButton(
+                            onPressed: () {
+                              // Navigate to the game detail page
+                            },
+                            child: Text("View Game Lobby")),
+                        isThreeLine: true,
+                      ),
                     ],
                   );
                 });
@@ -224,7 +256,11 @@ class _FindGameMapState extends State<FindGameMap> {
     // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
     // in the materialApp.
     return new StreamBuilder(
-        stream: Firestore.instance.collection('Games').snapshots(),
+        // Only fetch current games
+        stream: Firestore.instance
+            .collection('Games')
+            .where('endtime', isGreaterThan: new DateTime.now())
+            .snapshots(),
         builder: (context, snapshot) {
           // Any time the snapshot has new data, update the markerlsit
           if (snapshot.hasData) {
@@ -234,6 +270,20 @@ class _FindGameMapState extends State<FindGameMap> {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
               home: Container(
+                child: Center(
+                  child: Text(
+                    'loading map..',
+                    style: TextStyle(
+                        fontFamily: 'Avenir-Medium', color: Colors.grey[400]),
+                  ),
+                ),
+              ),
+            );
+          }
+          return MaterialApp(
+            // If the initial position is null, return a container saying that we are loading the map.
+            home: _userlocation == null
+                ? Container(
                     child: Center(
                       child: Text(
                         'loading map..',
@@ -242,30 +292,16 @@ class _FindGameMapState extends State<FindGameMap> {
                             color: Colors.grey[400]),
                       ),
                     ),
-                  ),
-            );
-          }
-          return MaterialApp(
-            home: _userlocation == null
-                  ? Container(
-                      child: Center(
-                        child: Text(
-                          'loading map..',
-                          style: TextStyle(
-                              fontFamily: 'Avenir-Medium',
-                              color: Colors.grey[400]),
-                        ),
-                      ),
-                    )
-                  // Once the initial position is not null, create the google map.
-                  : GoogleMap(
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: CameraPosition(
-                        target: _userlocation,
-                        zoom: 11.0,
-                      ),
-                      markers: markerlist,
+                  )
+                // Once the initial position is not null, create the google map.
+                : GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: _userlocation,
+                      zoom: 11.0,
                     ),
+                    markers: markerlist,
+                  ),
           );
         });
   }
