@@ -1,13 +1,12 @@
-import 'database.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 
 // Data Model Class to store game information and allow for both serialization and deserialization
 // of firebase data.
 class Game {
   final String id;
   Timestamp endtime;
+  //GeoFirePoint location;
   GeoPoint location;
   String note;
   int playersneeded;
@@ -33,7 +32,7 @@ class Game {
 
   // Default Constructor
   Game(
-      { this.id,
+      {this.id,
       this.endtime,
       this.location,
       this.note,
@@ -41,13 +40,13 @@ class Game {
       this.private,
       this.sport,
       this.starttime});
-  
-  // Function that allows for deserializaiton of Game Objects from the 
-  // firestore database. When we will be retreiving game information from the
-  // database, they will be returned to us in Map form. We need this
-  // fromMap function to easily convert the firestore data to be accessed
-  // within our class. Inspired by the link below in the section: From a Map or JSON
-  // https://fireship.io/lessons/advanced-flutter-firebase/
+
+  /// Function that allows for deserializaiton of Game Objects from the
+  /// firestore database. When we will be retreiving game information from the
+  /// database, they will be returned to us in Map form. We need this
+  /// fromMap function to easily convert the firestore data to be accessed
+  /// within our class. Inspired by the link below in the section: From a Map or JSON
+  /// https://fireship.io/lessons/advanced-flutter-firebase/
   factory Game.fromMap(Map data) {
     data = data ?? {};
     return Game(
@@ -60,16 +59,16 @@ class Game {
       starttime: data['starttime'] ?? '',
     );
   }
-  
-  // Function that allows for deserializaiton of Game Objects from the 
-  // firestore database. When we will be retreiving game information from the
-  // database, they will be returned to us in firestore form form. We need this
-  // fromfirestore function to easily convert the firestore data to be accessed
-  // within our class. Inspired by the link below in the section: From a firestore document.
-  // We can either use fromFirestore or fromMap to deserialize our data. I believe we should 
-  // use from fromFirestore so that we can assign each game the doc ID key that is generated in the firestore
-  // DB. If we do not use this strategy I am not sure how we will access the key.
-  // https://fireship.io/lessons/advanced-flutter-firebase/
+
+  /// Function that allows for deserializaiton of Game Objects from the
+  /// firestore database. When we will be retreiving game information from the
+  /// database, they will be returned to us in firestore form form. We need this
+  /// fromfirestore function to easily convert the firestore data to be accessed
+  /// within our class. Inspired by the link below in the section: From a firestore document.
+  /// We can either use fromFirestore or fromMap to deserialize our data. I believe we should
+  /// use from fromFirestore so that we can assign each game the doc ID key that is generated in the firestore
+  /// DB. If we do not use this strategy I am not sure how we will access the key.
+  /// https://fireship.io/lessons/advanced-flutter-firebase/
   factory Game.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data;
     return Game(
@@ -84,14 +83,13 @@ class Game {
     );
   }
 
-
-  // Function that maps our game object to the proper format
-  // in order to be added to the database.
-  // Inspired by the link below
-  // https://flutter.institute/firebase-firestore/
+  /// Function that maps our game object to the proper format
+  /// in order to be added to the database.
+  /// Inspired by the link below
+  /// https://flutter.institute/firebase-firestore/
   Map<String, dynamic> toMap() => {
         'endtime': this.endtime,
-        'location': this.location,
+        'position': this.location,
         'note': this.note,
         'playersneeded': this.playersneeded,
         'private': this.private,

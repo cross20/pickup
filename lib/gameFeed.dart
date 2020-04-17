@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:pickup_app/appUI.dart';
 import 'findGameMap.dart';
 
@@ -20,19 +21,19 @@ class GameFeedState extends StatefulWidget {
   _GameFeedState createState() => _GameFeedState();
 }
 
-  // Formats the content that will appear in the list item by item. The content is formatted
-  // using a container object.
-  // The main body for the game feed. Uses a column to manage multiple widgets in the body.
+// Formats the content that will appear in the list item by item. The content is formatted
+// using a container object.
+// The main body for the game feed. Uses a column to manage multiple widgets in the body.
 class _GameFeedState extends State<GameFeedState> {
   bool _list = true;
 
   @override
-  initState(){
+  initState() {
     super.initState();
     _list = true;
   }
 
-  void setList(bool list){
+  void setList(bool list) {
     setState(() {
       _list = list;
     });
@@ -62,97 +63,104 @@ class _GameFeedState extends State<GameFeedState> {
     );
   }
 
-
   ///Function to determine with Widget to show on game feed route. If _list is set to true (i.e,
   /// the List Button was last selected, then show list, else show map)
-  Widget listOrMap (){
-    if (_list == true){
+  Widget listOrMap() {
+    if (_list == true) {
       //Display list
-      return 
-            Expanded(
-              child: StreamBuilder(
-                stream: gamesSnapshots(),
-                builder: (context, snapshot) {
-                  if(!snapshot.hasData) {
-                    return const Text('Loading...');
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (BuildContext context, int index) => listBody(context, snapshot.data.documents[index])
-                  );
-                },
-              )
-            );
-    }
-    else {
+      return Expanded(
+          child: StreamBuilder(
+        stream: gamesSnapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Text('Loading...');
+          }
+          return ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: snapshot.data.documents.length,
+              itemBuilder: (BuildContext context, int index) =>
+                  listBody(context, snapshot.data.documents[index]));
+        },
+      ));
+    } else {
       //Display map
-      return Expanded(child: SizedBox(height:200.0, child: new FindGameMap()));//Column(children: <Widget>[Text("This is for the map")],);
+      return Expanded(
+          child: SizedBox(
+              height: 200.0,
+              child:
+                  new FindGameMap())); //Column(children: <Widget>[Text("This is for the map")],);
     }
   }
 
-    ///This is to determine the new Route that must be selected
-    /// to navigate to depending on which bottom nav button is selected 
-    ///  newRoute() is defined in appUI.dart file
-    void _onBotNavTap(int index) {
-      newRoute(index, context);
-    }
-
+  ///This is to determine the new Route that must be selected
+  /// to navigate to depending on which bottom nav button is selected
+  ///  newRoute() is defined in appUI.dart file
+  void _onBotNavTap(int index) {
+    newRoute(index, context);
+  }
 
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: //Center(
-        //child:
-        Column(
-          children: <Widget>[
-            Container(
-              color: Colors.blue,
-              child: Row(
-                // Filter by location (current or specified).
-                children: <Widget>[
-                  FlatButton(
-                    onPressed: null, // TODO: Display a search bar and keyboard to search for a location.
-                    child: Text('Location'),
-                  ),
-                  // Choose how to view games. Either in list or map form.
-                  Expanded(
-                    child: ButtonBar(
-                      alignment: MainAxisAlignment.center,
-                      buttonMinWidth: 80.0,
-                      children: <Widget>[
-                        RaisedButton(
-                          onPressed: () => {
-                            //set list bool to true
-                            setList(true)
-                          }, // TODO: Load the list view.
-                          child: Text('List',),
+          //child:
+          Column(
+        children: <Widget>[
+          Container(
+            color: Colors.blue,
+            child: Row(
+              // Filter by location (current or specified).
+              children: <Widget>[
+                FlatButton(
+                  onPressed:
+                      null, // TODO: Display a search bar and keyboard to search for a location.
+                  child: Icon(Icons.edit_location),
+                ),
+                // Choose how to view games. Either in list or map form.
+                Expanded(
+                  child: ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    buttonMinWidth: 80.0,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: () => {
+                          //set list bool to true
+                          setList(true)
+                        }, // TODO: Load the list view.
+                        child: Text(
+                          'List',
                         ),
-                        RaisedButton(
-                          onPressed: () => {
-                            setList(false)  
-                          }, // TODO: Load the map view.
-                          child: Text('Map',),
+                      ),
+                      RaisedButton(
+                        onPressed: () =>
+                            {setList(false)}, // TODO: Load the map view.
+                        child: Text(
+                          'Map',
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
-                  FlatButton(
-                    onPressed: () {Navigator.of(context).push(_createRoute(FilterPage()));}, // TODO: Determine which filter options are needed and to display them.
-                    child: Text('Filter'),
-                  )
-                ],
-              ),
+                ),
+                // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).push(_createRoute(FilterPage()));
+                  }, // TODO: Determine which filter options are needed and to display them.
+                  child: Icon(Icons.filter_list),
+                )
+              ],
             ),
-            listOrMap(),
-          ],
-        ), 
-      bottomNavigationBar: botNavBar(0, _onBotNavTap, context), // botNavBAr() Defined in appUI.dart file
+          ),
+          listOrMap(),
+        ],
+      ),
+      bottomNavigationBar: botNavBar(
+          0, _onBotNavTap, context), // botNavBAr() Defined in appUI.dart file
     );
-  }}
-  
+  }
+}
+
 class GameFeed extends StatefulWidget {
   GameFeed({Key key}) : super(key: key);
 
@@ -276,9 +284,13 @@ Route _createRoute(page) {
 }
 
 Stream<QuerySnapshot> gamesSnapshots() {
-  //return Firestore.instance.collection('Games').where('endtime', isGreaterThan: new DateTime.now()).snapshots();
-
   CollectionReference col = Firestore.instance.collection('Games');
+
+  Geoflutterfire geo = Geoflutterfire();
+  GeoFirePoint center = GeoFirePoint(47.0, 117.0);
+  geo
+      .collection(collectionRef: col)
+      .within(center: center, radius: 100, field: 'position');
 
   bool includeSports = false;
   for (bool shouldInclude in includeSport.values) {

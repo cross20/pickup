@@ -1,19 +1,14 @@
-/////This is the game creation page
-
-import 'dart:convert';
-import 'package:geocoder/services/base.dart';
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:dio/dio.dart';
 import 'appUI.dart';
 
-/// google places packages
+// google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
 import 'package:uuid/uuid.dart'; //for session token
 
@@ -44,7 +39,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   var uuid = new Uuid();
   String _sessionToken;
   List<String> _placesList = [];
-  GeoPoint _location;
+  GeoFirePoint _location;
 
   // init value of dropdownmenu
   String dropdownsport = "Basketball";
@@ -200,11 +195,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
   }
 
   // Function to create a new game and add to the firestore database.
-  void creategame(Timestamp _endtime, GeoPoint _location, String _note,
-      int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
+  void creategame(Timestamp _endtime, GeoFirePoint _location, String _note, int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
+    Geoflutterfire geo = Geoflutterfire();
+    GeoFirePoint point = geo.point(latitude: _location.latitude, longitude: _location.longitude);
+    
     Game game = new Game(
       endtime: _endtime,
-      location: _location,
+      //location: point.data,
+      location: _location.geoPoint,
       note: _note,
       playersneeded: _playersneeded,
       private: _private,
@@ -212,9 +210,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
       starttime: _starttime,
     );
     instance.addgame(game.toMap());
+    //Firestore.instance.collection('Games').add({'endtime': game.endtime, 'location':_location, 'position': game.location, 'note': game.note, 'playersneeded': game.playersneeded, 'private': game.private, 'sport': game.sport, 'endtime': game.endtime});
   }
 
-  ///this is so Text Widgets do not have to be re-written multiple times in the Widget build method
+  // this is so Text Widgets do not have to be re-written multiple times in the Widget build method
   Container text(String key, double maxWidth) {
     return Container(
         child: Text(
@@ -257,7 +256,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     var latitude = double.parse(res[0]);
     var longitude = double.parse(res[1]);
 
-    _location = GeoPoint(latitude, longitude);
+    _location = GeoFirePoint(latitude, longitude);
   }
 
   //For the list tiles of the list view for the google places search
