@@ -2,40 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:pickup_app/appUI.dart';
+import 'filterPage.dart';
 import 'findGameMap.dart';
+import 'filter.dart';
 
-/// Stores a boolean value for each [sport] that determines wheather or not a game should
-/// be loaded from the database.
-Map includeSport = {
-  'baseball': true,
-  'basketball': true,
-  'football': true,
-  'soccer': true
-};
-
-class GameFeedState extends StatefulWidget {
-  GameFeedState({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  _GameFeedState createState() => _GameFeedState();
+class GameFeed extends StatefulWidget {
+  GameFeedState createState() => GameFeedState();
 }
 
 // Formats the content that will appear in the list item by item. The content is formatted
 // using a container object.
 // The main body for the game feed. Uses a column to manage multiple widgets in the body.
-class _GameFeedState extends State<GameFeedState> {
-  bool _list = true;
+class GameFeedState extends State<GameFeed> {
+  /// Set to `true` to show games in the feed, set to `false` to show games in the map.
+  bool _showGameFeed = true;
 
   @override
   initState() {
     super.initState();
-    _list = true;
   }
 
-  void setList(bool list) {
+  /// Updates the value of [_showGameFeed] using [setState].
+  void shouldShowGameFeed(bool showFeed) {
     setState(() {
-      _list = list;
+      this._showGameFeed = showFeed;
     });
   }
 
@@ -63,10 +53,10 @@ class _GameFeedState extends State<GameFeedState> {
     );
   }
 
-  ///Function to determine with Widget to show on game feed route. If _list is set to true (i.e,
+  /// Function to determine with Widget to show on game feed route. If list is set to true (i.e,
   /// the List Button was last selected, then show list, else show map)
-  Widget listOrMap() {
-    if (_list == true) {
+  Widget feedOrMap() {
+    if (_showGameFeed == true) {
       //Display list
       return Expanded(
           child: StreamBuilder(
@@ -102,10 +92,8 @@ class _GameFeedState extends State<GameFeedState> {
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: //Center(
-          //child:
-          Column(
+      appBar: AppBar(automaticallyImplyLeading: false, title: Text('Games')),
+      body: Column(
         children: <Widget>[
           Container(
             color: Colors.blue,
@@ -124,17 +112,13 @@ class _GameFeedState extends State<GameFeedState> {
                     buttonMinWidth: 80.0,
                     children: <Widget>[
                       RaisedButton(
-                        onPressed: () => {
-                          //set list bool to true
-                          setList(true)
-                        }, // TODO: Load the list view.
+                        onPressed: () => {shouldShowGameFeed(true)},
                         child: Text(
                           'List',
                         ),
                       ),
                       RaisedButton(
-                        onPressed: () =>
-                            {setList(false)}, // TODO: Load the map view.
+                        onPressed: () => {shouldShowGameFeed(false)},
                         child: Text(
                           'Map',
                         ),
@@ -152,113 +136,11 @@ class _GameFeedState extends State<GameFeedState> {
               ],
             ),
           ),
-          listOrMap(),
+          feedOrMap(),
         ],
       ),
       bottomNavigationBar: botNavBar(
           0, _onBotNavTap, context), // botNavBAr() Defined in appUI.dart file
-    );
-  }
-}
-
-class GameFeed extends StatefulWidget {
-  GameFeed({Key key}) : super(key: key);
-
-  @override
-  _GameFeed createState() => _GameFeed();
-}
-
-class _GameFeed extends State<GameFeed> {
-  @override
-  Widget build(BuildContext context) {
-    return Text('temp');
-  }
-}
-
-/// Used to manage the various filter options for organizing Game objects as they appear in the
-/// game feed and on the map.
-class FilterPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Icon(
-              Icons.close,
-            ),
-          ),
-          Spacer(),
-          FlatButton(
-              onPressed: () {
-                // TODO: Figure out how to refresh the games that appear in the listView.builder.
-                Navigator.pop(context);
-              },
-              child: Icon(
-                Icons.done,
-              )),
-        ],
-      ),
-      body: StatefulFilterPage(),
-    );
-  }
-}
-
-class StatefulFilterPage extends StatefulWidget {
-  StatefulFilterPage({Key key}) : super(key: key);
-
-  @override
-  _StatefulFilterPage createState() => _StatefulFilterPage();
-}
-
-class _StatefulFilterPage extends State<StatefulFilterPage> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: NeverScrollableScrollPhysics(),
-      children: <Widget>[
-        CheckboxListTile(
-          title: const Text('Basketball'),
-          value: includeSport['basketball'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['basketball'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Football'),
-          value: includeSport['football'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['football'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Soccer'),
-          value: includeSport['soccer'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['soccer'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Baseball'),
-          value: includeSport['baseball'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['baseball'] = value;
-            });
-          },
-        ),
-        Text('Date picker goes here') // TODO: Implement dateTimePicker here.
-      ],
     );
   }
 }
@@ -292,7 +174,9 @@ Stream<QuerySnapshot> gamesSnapshots() {
       .collection(collectionRef: col)
       .within(center: center, radius: 100, field: 'position');
 
-  bool includeSports = false;
+      
+
+  /*bool includeSports = false;
   for (bool shouldInclude in includeSport.values) {
     if (shouldInclude) {
       includeSports = true;
@@ -320,7 +204,7 @@ Stream<QuerySnapshot> gamesSnapshots() {
 
   if (includeSport['soccer']) {
     col.where('sport', isEqualTo: 'Soccer');
-  }
+  }*/
 
   return col.where('endtime', isGreaterThan: new DateTime.now()).snapshots();
 }

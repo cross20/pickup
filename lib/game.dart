@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 
 // Data Model Class to store game information and allow for both serialization and deserialization
 // of firebase data.

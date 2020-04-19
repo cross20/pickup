@@ -31,9 +31,7 @@ void newRoute(int index, BuildContext context) {
       Navigator.push(
           context,
           PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => GameFeedState(
-                    title: "Home Feed",
-                  )));
+              pageBuilder: (context, animation1, animation2) => GameFeed()));
       break;
     case 1:
       // Navigator.push(
