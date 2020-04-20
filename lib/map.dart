@@ -76,28 +76,28 @@ class _MapPageState extends State<MapPage> {
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Basketball.png')
+            'assets/Basketball96.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Football.png')
+            'assets/Football96.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Soccer.png')
+            'assets/Soccer96.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Baseball.png')
+            'assets/Baseball96.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -157,7 +157,7 @@ class _MapPageState extends State<MapPage> {
                     children: <Widget>[
                       ListTile(
                         // For now we are just loading the baseball image
-                        leading: new Image.asset('assets/Baseball.png'),
+                        leading: new Image.asset('assets/Baseball96.png'),
                         // Need to pull the lat/lng so we can display the actual address
                         title: Text('Game at 1023 N Main Street',
                             // The sizing of this ListTile will be determined by FontSize.
