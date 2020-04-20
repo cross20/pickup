@@ -14,8 +14,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 // For global device stats
 import 'splashscreen.dart';
+import 'package:geocoder/geocoder.dart';
 
 Database instance = Database();
+
 
 // Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
@@ -146,6 +148,20 @@ class _MapPageState extends State<MapPage> {
               snap.data.documents.elementAt(i).data['location'].longitude),
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
+            DateTime gamedate =
+                snap.data.documents.elementAt(i).data['starttime'].toDate();
+            var gamedateformatter = new DateFormat('yMMMMEEEEd');
+            String formattedgamedate = gamedateformatter.format(gamedate);
+
+            DateTime starttime =
+                snap.data.documents.elementAt(i).data['starttime'].toDate();
+            var starttimeformatter = new DateFormat("Hm");
+            String formattedstarttime = starttimeformatter.format(starttime);
+
+            DateTime endtime =
+                snap.data.documents.elementAt(i).data['endtime'].toDate();
+            var endtimeformatter = new DateFormat("Hm");
+            String formattedendtime = endtimeformatter.format(endtime);
             // Here is what happens when a marker is pressed on.
             // The showModalbottom sheet slides up a new view
             showModalBottomSheet(
@@ -156,17 +172,36 @@ class _MapPageState extends State<MapPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                        // For now we are just loading the baseball image
-                        leading: new Image.asset('assets/Baseball96.png'),
+                        // Load the correct image
+                        leading: new Image.asset('assets/' +
+                            snap.data.documents
+                                .elementAt(i)
+                                .data['sport']
+                                .toString() +
+                            '96.png'),
                         // Need to pull the lat/lng so we can display the actual address
-                        title: Text('Game at 1023 N Main Street',
+                        title: Text(
+                            snap.data.documents
+                                .elementAt(i)
+                                .data['location']
+                                .toString(),
                             // The sizing of this ListTile will be determined by FontSize.
                             // We need to play around with fontsize to figure out what
                             // looks best across all devices.
                             style: TextStyle(fontSize: 20)),
                         // In the future, the subtitle will pull values from the DB
                         subtitle: Text(
-                            'Thursday, Apr 16, 2020\nFrom 12:30PM to 1:30PM\nPlayers needed: 5\nPlayers currently in game: 5',
+                            formattedgamedate +
+                                '\nFrom ' +
+                                formattedstarttime +
+                                ' to ' +
+                                formattedendtime +
+                                '\nPlayers needed: ' +
+                                snap.data.documents
+                                    .elementAt(i)
+                                    .data['playersneeded']
+                                    .toString() +
+                                '\nPlayers currently in game: 5',
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
@@ -247,6 +282,13 @@ class _MapPageState extends State<MapPage> {
     markerstoremovelist.clear();
     currentgamesdocidlist.clear();
     currentmarkeridlist.clear();
+  }
+
+  _coordinatetoaddress(GeoPoint gamelocation, var address) async {
+    final coordinates =
+        new Coordinates(gamelocation.latitude, gamelocation.longitude);
+    address = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    address = address.first;
   }
 
   @override
