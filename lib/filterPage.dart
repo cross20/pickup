@@ -7,10 +7,10 @@ import 'globals.dart' as globals;
 /// The global value should be updated based on the values in this [Map] if it is
 /// appropriate to update the global values.
 Map sport = {
-  'baseball': globals.filter.baseball,
-  'basketball': globals.filter.basketball,
-  'football': globals.filter.football,
-  'soccer': globals.filter.soccer,
+  'baseball': globals.filter.baseball.value,
+  'basketball': globals.filter.basketball.value,
+  'football': globals.filter.football.value,
+  'soccer': globals.filter.soccer.value,
 };
 
 class FilterPage extends StatefulWidget {
@@ -26,10 +26,10 @@ class FilterPageState extends State<FilterPage> {
         actions: <Widget>[
           FlatButton(
             onPressed: () {
-              sport['baseball'] = globals.filter.baseball;
-              sport['basketball'] = globals.filter.basketball;
-              sport['football'] = globals.filter.football;
-              sport['soccer'] = globals.filter.soccer;
+              sport['baseball'] = globals.filter.baseball.value;
+              sport['basketball'] = globals.filter.basketball.value;
+              sport['football'] = globals.filter.football.value;
+              sport['soccer'] = globals.filter.soccer.value;
               Navigator.pop(context);
             },
             child: Icon(

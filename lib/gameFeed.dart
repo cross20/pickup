@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:pickup_app/appUI.dart';
+import 'package:pickup_app/globals.dart';
 import 'filterPage.dart';
 import 'findGameMap.dart';
-import 'filter.dart';
+import 'game.dart';
 
 class GameFeed extends StatefulWidget {
   GameFeedState createState() => GameFeedState();
@@ -30,7 +31,7 @@ class GameFeedState extends State<GameFeed> {
   }
 
   /// Formats each individual game to appear in the listView.builder.
-  Widget listBody(BuildContext context, DocumentSnapshot document) {
+  Widget createGameCard(BuildContext context, DocumentSnapshot document) {
     DateTime startTime = (document['starttime'] as Timestamp).toDate();
     DateTime endTime = (document['endtime'] as Timestamp).toDate();
 
@@ -58,20 +59,25 @@ class GameFeedState extends State<GameFeed> {
   Widget feedOrMap() {
     if (_showGameFeed == true) {
       //Display list
-      return Expanded(
-          child: StreamBuilder(
-        stream: gamesSnapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Text('Loading...');
-          }
-          return ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: snapshot.data.documents.length,
-              itemBuilder: (BuildContext context, int index) =>
-                  listBody(context, snapshot.data.documents[index]));
-        },
-      ));
+      return ValueListenableBuilder(
+          valueListenable: filter.baseball,
+          builder: (BuildContext context, bool value, Widget child) {
+            return Expanded(
+                child: StreamBuilder(
+              stream: gamesSnapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text('Loading...');
+                }
+                return ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        createGameCard(
+                            context, snapshot.data.documents[index]));
+              },
+            ));
+          });
     } else {
       //Display map
       return Expanded(
@@ -82,9 +88,9 @@ class GameFeedState extends State<GameFeed> {
     }
   }
 
-  ///This is to determine the new Route that must be selected
+  /// This is to determine the new Route that must be selected
   /// to navigate to depending on which bottom nav button is selected
-  ///  newRoute() is defined in appUI.dart file
+  /// newRoute() is defined in appUI.dart file
   void _onBotNavTap(int index) {
     newRoute(index, context);
   }
@@ -130,7 +136,7 @@ class GameFeedState extends State<GameFeed> {
                 FlatButton(
                   onPressed: () {
                     Navigator.of(context).push(_createRoute(FilterPage()));
-                  }, // TODO: Determine which filter options are needed and to display them.
+                  },
                   child: Icon(Icons.filter_list),
                 )
               ],
@@ -165,48 +171,42 @@ Route _createRoute(page) {
   );
 }
 
+/// Retrieves the games from the database based on the filter values selected. Also, filters out
+/// games which have ended.
 Stream<QuerySnapshot> gamesSnapshots() {
   CollectionReference col = Firestore.instance.collection('Games');
 
-  Geoflutterfire geo = Geoflutterfire();
+  /*Geoflutterfire geo = Geoflutterfire();
   GeoFirePoint center = GeoFirePoint(47.0, 117.0);
   geo
       .collection(collectionRef: col)
-      .within(center: center, radius: 100, field: 'position');
+      .within(center: center, radius: 100, field: 'position');*/
 
-      
+  Query q = col.where('endtime', isGreaterThan: new DateTime.now());
 
-  /*bool includeSports = false;
-  for (bool shouldInclude in includeSport.values) {
-    if (shouldInclude) {
-      includeSports = true;
-    }
+  List<String> includedSports = new List<String>();
+
+  if (filter.baseball.value) {
+    includedSports.add('Baseball');
   }
 
-  if (!includeSports) {
-    return col
-        .where('sport', isEqualTo: 'None')
-        .where('endtime', isGreaterThan: new DateTime.now())
-        .snapshots();
+  if (filter.basketball.value) {
+    includedSports.add('Basketball');
   }
 
-  if (includeSport['baseball']) {
-    col.where('sport', isEqualTo: 'Baseball');
+  if (filter.football.value) {
+    includedSports.add('Football');
   }
 
-  if (includeSport['basketball']) {
-    col.where('sport', isEqualTo: 'Basketball');
+  if (filter.soccer.value) {
+    includedSports.add('Soccer');
   }
 
-  if (includeSport['football']) {
-    col.where('sport', isEqualTo: 'Football');
+  if (includedSports.isEmpty) {
+    return q.limit(0).snapshots();
   }
 
-  if (includeSport['soccer']) {
-    col.where('sport', isEqualTo: 'Soccer');
-  }*/
-
-  return col.where('endtime', isGreaterThan: new DateTime.now()).snapshots();
+  return q.where('sport', whereIn: includedSports.toList()).snapshots();
 }
 
 /// Formats DateTime objects for games. Returns a string which describes a game's current status:
