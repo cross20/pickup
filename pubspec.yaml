@@ -31,6 +31,7 @@ dependencies:
   location: ^3.0.2
   dio: ^2.1.13 # this dio package is for custom google places search
   uuid: ^2.0.1 # for the session tokens 
+  flutter_form_builder: ^3.8.3
     
 
   # The following adds the Cupertino Icons font to your application.
