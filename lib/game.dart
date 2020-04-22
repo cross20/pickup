@@ -9,6 +9,7 @@ class Game {
   final String id;
   Timestamp endtime;
   GeoPoint location;
+  String address;
   String note;
   int playersneeded;
   bool private;
@@ -36,6 +37,7 @@ class Game {
       { this.id,
       this.endtime,
       this.location,
+      this.address,
       this.note,
       this.playersneeded,
       this.private,
@@ -53,6 +55,7 @@ class Game {
     return Game(
       endtime: data['endtime'] ?? '',
       location: data['location'] ?? '',
+      address: data['address'] ?? '',
       note: data['note'] ?? '',
       playersneeded: data['playersneeded'] ?? 0,
       private: data['private'] ?? false,
@@ -76,6 +79,7 @@ class Game {
       id: doc.documentID,
       endtime: data['endtime'] ?? '',
       location: data['location'] ?? '',
+      address: data['address'] ?? '',
       note: data['note'] ?? '',
       playersneeded: data['playersneeded'] ?? 0,
       private: data['private'] ?? false,
@@ -92,6 +96,7 @@ class Game {
   Map<String, dynamic> toMap() => {
         'endtime': this.endtime,
         'location': this.location,
+        'address': this.address,
         'note': this.note,
         'playersneeded': this.playersneeded,
         'private': this.private,
