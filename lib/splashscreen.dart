@@ -57,6 +57,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
       userlogged = true;
   }
 
+//changes the state of userid to the current user id in the session
   getUserId(){
  widget.auth.getCurrentUser().then((user) {
       setState(() {
@@ -70,6 +71,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
     getUserId();
     _pageOptions = List();
 
+    //pages are added to the list after this widget is built
     _pageOptions.add(GameFeedState());
     _pageOptions.add(CreateGamePage(userId: _userId));
     _pageOptions.add(CreateGamePage(userId: _userId));
@@ -94,9 +96,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
            currentIndex: _selectedTab,
             onTap: (int index) {
                 setState(() {
-                    _selectedTab = index;
-                    print("Hello check");
-                    print (_userId);
+                    _selectedTab = index; // identifies which button on navbar is clicked
                     return _selectedTab;
                                     
                 });
