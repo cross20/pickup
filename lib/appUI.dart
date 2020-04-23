@@ -2,6 +2,7 @@
 /// defining them in one place and calling on them over multiple Widgets allows for more efficiency 
 
 import 'package:flutter/material.dart';
+import 'package:pickup_app/myGamesUI.dart';
 import 'createGame.dart';
 import 'gameFeed.dart';
 
@@ -36,12 +37,12 @@ void newRoute(int index, BuildContext context) {
                   )));
       break;
     case 1:
-      // Navigator.push(
-      //     context,
-      //     PageRouteBuilder(
-      //         pageBuilder: (context, animation1, animation2) => ProfilePage(
-      //               title: "Your Profile",
-      //             )));
+       Navigator.push(
+           context,
+           PageRouteBuilder(
+               pageBuilder: (context, animation1, animation2) => MyGamesPage(
+
+                   )));
       break;
     case 2:
       Navigator.push(
