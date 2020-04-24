@@ -15,11 +15,46 @@ import 'package:geolocator/geolocator.dart';
 // For global device stats
 import 'splashscreen.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:fluster/fluster.dart';
+import 'package:meta/meta.dart';
 
 Database instance = Database();
 
+class MapMarker extends Clusterable {
+  final String id;
+  final LatLng position;
+  final BitmapDescriptor icon;
+  MapMarker({
+    @required this.id,
+    @required this.position,
+    @required this.icon,
+    isCluster = false,
+    clusterId,
+    pointsSize,
+    childMarkerId,
+  }) : super(
+          markerId: id,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          isCluster: isCluster,
+          clusterId: clusterId,
+          pointsSize: pointsSize,
+          childMarkerId: childMarkerId,
+        );
+  Marker toMarker() => Marker(
+        markerId: MarkerId(id),
+        position: LatLng(
+          position.latitude,
+          position.longitude,
+        ),
+        icon: icon,
+      );
+}
+
 // Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
+
+Set<MapMarker> clusterlist = new Set();
 
 class MapPage extends StatefulWidget {
   MapPage({Key key, this.title}) : super(key: key);
@@ -110,6 +145,11 @@ class _MapPageState extends State<MapPage> {
     mapController = controller;
   }
 
+// This is the variable that will track the zindex for the google map markers.
+// The zindex determines what marker will take priority when there are overlapping
+// markers on the map. 
+  double markerzindex = 0;
+
 // This function takes in a snapshot generated from a streambuilder
 // that allows for constant listening of new datachanges to the database.
 // The function takes in this streambuilder data and accesses location
@@ -137,6 +177,8 @@ class _MapPageState extends State<MapPage> {
             'Baseball') {
           icon = baseball;
         }
+        // Change the z index
+        markerzindex++;
         // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
         markerlist.add(new Marker(
           // Set the markerID as the documentID from the database
@@ -145,9 +187,12 @@ class _MapPageState extends State<MapPage> {
           position: LatLng(
               snap.data.documents.elementAt(i).data['location'].latitude,
               snap.data.documents.elementAt(i).data['location'].longitude),
+          zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
             // https://stackoverflow.com/questions/16126579/how-do-i-format-a-date-with-dart
+
+            // Get dates ready for displaying on icon tap
             DateTime gamedate =
                 snap.data.documents.elementAt(i).data['starttime'].toDate();
             var gamedateformatter = new DateFormat('yMMMMEEEEd');
@@ -164,7 +209,7 @@ class _MapPageState extends State<MapPage> {
             endtime = endtime.toLocal();
             var endtimeformatter = new DateFormat("jm");
             String formattedendtime = endtimeformatter.format(endtime);
-            // Here is what happens when a marker is pressed on.
+  
             // The showModalbottom sheet slides up a new view
             showModalBottomSheet(
                 context: context,
@@ -187,8 +232,8 @@ class _MapPageState extends State<MapPage> {
                                 .elementAt(i)
                                 .data['address']
                                 .toString(),
-                            // The sizing of this ListTile will be determined by FontSize.
-                            // We need to play around with fontsize to figure out what
+                            // TODO: The sizing of this ListTile will be determined by FontSize.
+                            // TODO: We need to play around with fontsize to figure out what
                             // looks best across all devices.
                             style: TextStyle(fontSize: 20)),
                         // In the future, the subtitle will pull values from the DB
@@ -204,7 +249,7 @@ class _MapPageState extends State<MapPage> {
                                     .data['playersneeded']
                                     .toString() +
                                 // TODO: Implement players currently in the game once this feature is complete
-                                // by someone else. 
+                                // by someone else.
                                 '\nPlayers in game: need to implement ',
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
@@ -305,6 +350,10 @@ class _MapPageState extends State<MapPage> {
         stream: Firestore.instance
             .collection('Games')
             .where('endtime', isGreaterThan: new DateTime.now())
+            // Order in ascending order so we can track which games are older.
+            // This is so we can correctly layer the map using zindex on the
+            // google map
+            .orderBy('endtime', descending: false)
             .snapshots(),
         builder: (context, snapshot) {
           // Any time the snapshot has new data, update the markerlsit
