@@ -12,9 +12,6 @@ import 'package:intl/intl.dart';
 import 'authentication.dart';
 import 'dart:async';
 
-// Create a global variable that can help us get information about
-// the users device. 
-MediaQueryData globaldevicestats;
 
 class SplashScreenPage extends StatefulWidget {
   SplashScreenPage({Key key, this.title, this.auth, this.userId, this.logoutCallback}): super(key:key);
@@ -51,9 +48,6 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
   @override
   Widget build(BuildContext context) {
     getUser();
-    // Initialize the local variable when the user hits the splash screen
-    // so we can get screen size
-    globaldevicestats = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.title),
       actions: <Widget>[

@@ -111,28 +111,28 @@ class _MapPageState extends State<MapPage> {
     super.initState();
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
-                devicePixelRatio: globaldevicestats.devicePixelRatio),
+                devicePixelRatio: 2.5),
             'assets/Basketball96.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
-                devicePixelRatio: globaldevicestats.devicePixelRatio),
+                devicePixelRatio: 2.5),
             'assets/Football96.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
-                devicePixelRatio: globaldevicestats.devicePixelRatio),
+                devicePixelRatio: 2.5),
             'assets/Soccer96.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
-                devicePixelRatio: globaldevicestats.devicePixelRatio),
+                devicePixelRatio: 2.5),
             'assets/Baseball96.png')
         .then((onValue) {
       baseball = onValue;
