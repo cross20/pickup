@@ -72,17 +72,16 @@ class _SplashScreenPageState extends State<SplashScreenPage>{
     _pageOptions = List();
 
     //pages are added to the list after this widget is built
-    _pageOptions.add(GameFeedState(title:"Userfeed"));
-    _pageOptions.add(CreateGamePage(userId: 'ab'));
-    _pageOptions.add(CreateGamePage(userId: 'ab'));
+    _pageOptions.add(GameFeedState());
+    _pageOptions.add(CreateGamePage(userId: _userId));
+    _pageOptions.add(CreateGamePage(userId: _userId));
     
-     
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title),
+    appBar: AppBar(title: Text(widget.title),
       actions: <Widget>[
             new FlatButton(
-                child: new Text('Logout',
+               child: new Text('Logout',
                     style: new TextStyle(fontSize: 17.0, color: Colors.white)),
                 onPressed: signOut)
           ],

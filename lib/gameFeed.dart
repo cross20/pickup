@@ -102,7 +102,7 @@ class _GameFeedState extends State<GameFeedState> {
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      
       body: //Center(
         //child:
         Column(
@@ -149,7 +149,7 @@ class _GameFeedState extends State<GameFeedState> {
             listOrMap(),
           ],
         ), 
-      bottomNavigationBar: botNavBar(0, _onBotNavTap, context), // botNavBAr() Defined in appUI.dart file
+     
     );
   }}
   
