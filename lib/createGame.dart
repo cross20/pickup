@@ -358,8 +358,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                   ),
                 )
               ],
-            ),
-
+            ), 
             ///time and date row
             Row(
               children: <Widget>[
