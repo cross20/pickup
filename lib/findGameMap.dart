@@ -15,11 +15,47 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 // For global device stats
 import 'splashscreen.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:fluster/fluster.dart';
+import 'package:meta/meta.dart';
 
 Database instance = Database();
 
+class MapMarker extends Clusterable {
+  final String id;
+  final LatLng position;
+  final BitmapDescriptor icon;
+  MapMarker({
+    @required this.id,
+    @required this.position,
+    @required this.icon,
+    isCluster = false,
+    clusterId,
+    pointsSize,
+    childMarkerId,
+  }) : super(
+          markerId: id,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          isCluster: isCluster,
+          clusterId: clusterId,
+          pointsSize: pointsSize,
+          childMarkerId: childMarkerId,
+        );
+  Marker toMarker() => Marker(
+        markerId: MarkerId(id),
+        position: LatLng(
+          position.latitude,
+          position.longitude,
+        ),
+        icon: icon,
+      );
+}
+
 // Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
+
+Set<MapMarker> clusterlist = new Set();
 
 class FindGameMap extends StatefulWidget {
   FindGameMap({Key key, this.title}) : super(key: key);
@@ -77,28 +113,28 @@ class _FindGameMapState extends State<FindGameMap> {
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Basketball.png')
+            'assets/Basketball96.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Football.png')
+            'assets/Football96.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Soccer.png')
+            'assets/Soccer96.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: globaldevicestats.devicePixelRatio),
-            'assets/Baseball.png')
+            'assets/Baseball96.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -109,6 +145,11 @@ class _FindGameMapState extends State<FindGameMap> {
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
+
+// This is the variable that will track the zindex for the google map markers.
+// The zindex determines what marker will take priority when there are overlapping
+// markers on the map. 
+  double markerzindex = 0;
 
 // This function takes in a snapshot generated from a streambuilder
 // that allows for constant listening of new datachanges to the database.
@@ -137,6 +178,8 @@ class _FindGameMapState extends State<FindGameMap> {
             'Baseball') {
           icon = baseball;
         }
+        // Change the z index
+        markerzindex++;
         // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
         markerlist.add(new Marker(
           // Set the markerID as the documentID from the database
@@ -145,9 +188,29 @@ class _FindGameMapState extends State<FindGameMap> {
           position: LatLng(
               snap.data.documents.elementAt(i).data['location'].latitude,
               snap.data.documents.elementAt(i).data['location'].longitude),
+          zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
-            // Here is what happens when a marker is pressed on.
+            // https://stackoverflow.com/questions/16126579/how-do-i-format-a-date-with-dart
+
+            // Get dates ready for displaying on icon tap
+            DateTime gamedate =
+                snap.data.documents.elementAt(i).data['starttime'].toDate();
+            var gamedateformatter = new DateFormat('yMMMMEEEEd');
+            String formattedgamedate = gamedateformatter.format(gamedate);
+
+            DateTime starttime =
+                snap.data.documents.elementAt(i).data['starttime'].toDate();
+            starttime = starttime.toLocal();
+            var starttimeformatter = new DateFormat("jm");
+            String formattedstarttime = starttimeformatter.format(starttime);
+
+            DateTime endtime =
+                snap.data.documents.elementAt(i).data['endtime'].toDate();
+            endtime = endtime.toLocal();
+            var endtimeformatter = new DateFormat("jm");
+            String formattedendtime = endtimeformatter.format(endtime);
+  
             // The showModalbottom sheet slides up a new view
             showModalBottomSheet(
                 context: context,
@@ -157,17 +220,38 @@ class _FindGameMapState extends State<FindGameMap> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       ListTile(
-                        // For now we are just loading the baseball image
-                        leading: new Image.asset('assets/Baseball.png'),
+                        // Load the correct image
+                        leading: new Image.asset('assets/' +
+                            snap.data.documents
+                                .elementAt(i)
+                                .data['sport']
+                                .toString() +
+                            '.png'),
                         // Need to pull the lat/lng so we can display the actual address
-                        title: Text('Game at 1023 N Main Street',
-                            // The sizing of this ListTile will be determined by FontSize.
-                            // We need to play around with fontsize to figure out what
+                        title: Text(
+                            snap.data.documents
+                                .elementAt(i)
+                                .data['address']
+                                .toString(),
+                            // TODO: The sizing of this ListTile will be determined by FontSize.
+                            // TODO: We need to play around with fontsize to figure out what
                             // looks best across all devices.
                             style: TextStyle(fontSize: 20)),
                         // In the future, the subtitle will pull values from the DB
                         subtitle: Text(
-                            'Thursday, Apr 16, 2020\nFrom 12:30PM to 1:30PM\nPlayers needed: 5\nPlayers currently in game: 5',
+                            formattedgamedate +
+                                '\nFrom ' +
+                                formattedstarttime +
+                                ' to ' +
+                                formattedendtime +
+                                '\nPlayers needed: ' +
+                                snap.data.documents
+                                    .elementAt(i)
+                                    .data['playersneeded']
+                                    .toString() +
+                                // TODO: Implement players currently in the game once this feature is complete
+                                // by someone else.
+                                '\nPlayers in game: need to implement ',
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
@@ -250,6 +334,13 @@ class _FindGameMapState extends State<FindGameMap> {
     currentmarkeridlist.clear();
   }
 
+  _coordinatetoaddress(GeoPoint gamelocation, var address) async {
+    final coordinates =
+        new Coordinates(gamelocation.latitude, gamelocation.longitude);
+    address = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    address = address.first;
+  }
+
   @override
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
@@ -260,6 +351,10 @@ class _FindGameMapState extends State<FindGameMap> {
         stream: Firestore.instance
             .collection('Games')
             .where('endtime', isGreaterThan: new DateTime.now())
+            // Order in ascending order so we can track which games are older.
+            // This is so we can correctly layer the map using zindex on the
+            // google map
+            .orderBy('endtime', descending: false)
             .snapshots(),
         builder: (context, snapshot) {
           // Any time the snapshot has new data, update the markerlsit
@@ -269,21 +364,7 @@ class _FindGameMapState extends State<FindGameMap> {
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
-              home: Container(
-                child: Center(
-                  child: Text(
-                    'loading map..',
-                    style: TextStyle(
-                        fontFamily: 'Avenir-Medium', color: Colors.grey[400]),
-                  ),
-                ),
-              ),
-            );
-          }
-          return MaterialApp(
-            // If the initial position is null, return a container saying that we are loading the map.
-            home: _userlocation == null
-                ? Container(
+                  home: Container(
                     child: Center(
                       child: Text(
                         'loading map..',
@@ -292,16 +373,31 @@ class _FindGameMapState extends State<FindGameMap> {
                             color: Colors.grey[400]),
                       ),
                     ),
-                  )
-                // Once the initial position is not null, create the google map.
-                : GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    initialCameraPosition: CameraPosition(
-                      target: _userlocation,
-                      zoom: 11.0,
-                    ),
-                    markers: markerlist,
                   ),
+            );
+          }
+          return MaterialApp(
+              // If the initial position is null, return a container saying that we are loading the map.
+              home: _userlocation == null
+                  ? Container(
+                      child: Center(
+                        child: Text(
+                          'loading map..',
+                          style: TextStyle(
+                              fontFamily: 'Avenir-Medium',
+                              color: Colors.grey[400]),
+                        ),
+                      ),
+                    )
+                  // Once the initial position is not null, create the google map.
+                  : GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: _userlocation,
+                        zoom: 11.0,
+                      ),
+                      markers: markerlist,
+                    ),
           );
         });
   }
