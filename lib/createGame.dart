@@ -22,9 +22,10 @@ Database instance = new Database();
 
 // this class is for initializing this page
 class CreateGamePage extends StatefulWidget {
-  CreateGamePage({Key key, this.title}) : super(key: key);
+  CreateGamePage({Key key, this.title, this.userId:''}) : super(key: key);
 
   final String title;
+  String userId;
 
   _CreateGamePageState createState() => _CreateGamePageState();
 }
