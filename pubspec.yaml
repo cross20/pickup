@@ -62,10 +62,6 @@ flutter:
    - assets/Basketball.png
    - assets/Soccer.png
    - assets/Baseball.png
-   - assets/Football96.png
-   - assets/Basketball96.png
-   - assets/Soccer96.png
-   - assets/Baseball96.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
