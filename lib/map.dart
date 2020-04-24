@@ -18,7 +18,6 @@ import 'package:geocoder/geocoder.dart';
 
 Database instance = Database();
 
-
 // Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
 
@@ -148,6 +147,7 @@ class _MapPageState extends State<MapPage> {
               snap.data.documents.elementAt(i).data['location'].longitude),
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
+            // https://stackoverflow.com/questions/16126579/how-do-i-format-a-date-with-dart
             DateTime gamedate =
                 snap.data.documents.elementAt(i).data['starttime'].toDate();
             var gamedateformatter = new DateFormat('yMMMMEEEEd');
@@ -155,12 +155,14 @@ class _MapPageState extends State<MapPage> {
 
             DateTime starttime =
                 snap.data.documents.elementAt(i).data['starttime'].toDate();
-            var starttimeformatter = new DateFormat("Hm");
+            starttime = starttime.toLocal();
+            var starttimeformatter = new DateFormat("jm");
             String formattedstarttime = starttimeformatter.format(starttime);
 
             DateTime endtime =
                 snap.data.documents.elementAt(i).data['endtime'].toDate();
-            var endtimeformatter = new DateFormat("Hm");
+            endtime = endtime.toLocal();
+            var endtimeformatter = new DateFormat("jm");
             String formattedendtime = endtimeformatter.format(endtime);
             // Here is what happens when a marker is pressed on.
             // The showModalbottom sheet slides up a new view
@@ -178,12 +180,12 @@ class _MapPageState extends State<MapPage> {
                                 .elementAt(i)
                                 .data['sport']
                                 .toString() +
-                            '96.png'),
+                            '.png'),
                         // Need to pull the lat/lng so we can display the actual address
                         title: Text(
                             snap.data.documents
                                 .elementAt(i)
-                                .data['location']
+                                .data['address']
                                 .toString(),
                             // The sizing of this ListTile will be determined by FontSize.
                             // We need to play around with fontsize to figure out what
@@ -201,7 +203,9 @@ class _MapPageState extends State<MapPage> {
                                     .elementAt(i)
                                     .data['playersneeded']
                                     .toString() +
-                                '\nPlayers currently in game: 5',
+                                // TODO: Implement players currently in the game once this feature is complete
+                                // by someone else. 
+                                '\nPlayers in game: need to implement ',
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
