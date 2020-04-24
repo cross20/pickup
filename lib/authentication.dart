@@ -12,8 +12,6 @@ abstract class BaseAuth {
 
   Future<FirebaseUser> getCurrentUser();
 
-  
-
   Future<void> sendEmailVerification();
 
   Future<void> signOut();

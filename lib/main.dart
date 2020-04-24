@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         '/map':(BuildContext context) => MapPage(title: "This is the map"),
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),
-        '/gameFeed':(BuildContext context) => GameFeedState(title: "Games"),
+        '/gameFeed':(BuildContext context) => GameFeedState(),
       }
     );
   }
