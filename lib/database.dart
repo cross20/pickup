@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Database {
   final firestoreDb = Firestore.instance;
   var games;
+  var usergames;
 
 // Default constructor
   Database() {
@@ -18,5 +19,10 @@ class Database {
  List<dynamic> getGames(){
     firestoreDb.collection('Games').snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
     return games;
+  }
+
+  List<dynamic> getGamesbyUser(){
+    firestoreDb.collection('Games').where('userId', isEqualTo:"MeqU5s6zeUbSDQeWOOncpl4cdyn1").snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
+    return usergames;
   }
 }

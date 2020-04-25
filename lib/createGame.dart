@@ -17,9 +17,10 @@ Database instance = new Database();
 
 // this class is for initializing this page
 class CreateGamePage extends StatefulWidget {
-  CreateGamePage({Key key, this.title}) : super(key: key);
+  CreateGamePage({Key key, this.title, this.userId:''}) : super(key: key);
 
   final String title;
+  String userId;
 
   _CreateGamePageState createState() => _CreateGamePageState();
 }
@@ -284,9 +285,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+     
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -325,8 +324,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                   ),
                 )
               ],
-            ),
-
+            ), 
             ///time and date row
             Row(
               children: <Widget>[
@@ -490,8 +488,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
         onPressed: _updateData,
         tooltip: 'Increment',
         child: Text('Submit'),
-      ),
-      bottomNavigationBar: botNavBar(2, _onBotNavTap, context), // This trailing comma makes auto-formatting nicer for build methods.
+      )
+     // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

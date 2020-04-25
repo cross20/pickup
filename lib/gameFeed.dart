@@ -98,7 +98,7 @@ class GameFeedState extends State<GameFeed> {
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: Text('Games')),
+      //appBar: AppBar(automaticallyImplyLeading: false),
       body: Column(
         children: <Widget>[
           Container(
@@ -145,8 +145,6 @@ class GameFeedState extends State<GameFeed> {
           feedOrMap(),
         ],
       ),
-      bottomNavigationBar: botNavBar(
-          0, _onBotNavTap, context), // botNavBAr() Defined in appUI.dart file
     );
   }
 }
@@ -182,7 +180,8 @@ Stream<QuerySnapshot> gamesSnapshots() {
   GeoFireCollectionRef geoRef = geo.collection(collectionRef: col);
   GeoFirePoint center = GeoFirePoint(47.0, 117.0);
 
-  Stream<List<DocumentSnapshot> > stream = geoRef.within(center: center, radius: 100, field: 'position');
+  Stream<List<DocumentSnapshot>> stream =
+      geoRef.within(center: center, radius: 100, field: 'position');
 
   Stream<QuerySnapshot> qs = geoRef.snapshot();
 
