@@ -18,6 +18,7 @@ import 'splashscreen.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:fluster/fluster.dart';
 import 'package:meta/meta.dart';
+import 'gamedetails.dart';
 
 Database instance = Database();
 
@@ -256,6 +257,10 @@ class _FindGameMapState extends State<FindGameMap> {
                         trailing: RaisedButton(
                             onPressed: () {
                               // Navigate to the game detail page
+                              Navigator.push(
+                                context, MaterialPageRoute(             // Pass the game ID to the page so we can access data for the specific game
+                                  builder: (context) => GameDetailsPage(snap.data.documents.elementAt(i).documentID))
+                              );
                             },
                             child: Text("View Game Lobby")),
                         isThreeLine: true,

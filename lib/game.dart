@@ -7,6 +7,8 @@ import 'package:firebase_core/firebase_core.dart';
 // of firebase data.
 class Game {
   final String id;
+  String userid;
+  String address;
   Timestamp endtime;
   GeoPoint location;
   String note;
@@ -34,6 +36,8 @@ class Game {
   // Default Constructor
   Game(
       { this.id,
+      this.userid,
+      this.address,
       this.endtime,
       this.location,
       this.note,

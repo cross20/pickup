@@ -17,6 +17,7 @@ import 'authroot.dart';
 import 'authentication.dart';
 import 'gameFeed.dart';
 import 'splashscreen.dart';
+import 'gamedetails.dart';
 
 void main() => runApp(MyApp());
 
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),
         '/gameFeed':(BuildContext context) => GameFeedState(),
+        '/gameFeed/details':(BuildContext context) => GameDetailsPage(null),
       }
     );
   }
