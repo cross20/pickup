@@ -196,12 +196,12 @@ class _CreateGamePageState extends State<CreateGamePage> {
 
   // Function to create a new game and add to the firestore database.
   void creategame(Timestamp _endtime, GeoFirePoint _location, String _note, int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
-    Geoflutterfire geo = Geoflutterfire();
-    GeoFirePoint point = geo.point(latitude: _location.latitude, longitude: _location.longitude);
+    //Geoflutterfire geo = Geoflutterfire();
+    //GeoFirePoint point = geo.point(latitude: _location.latitude, longitude: _location.longitude);
     
     Game game = new Game(
       endtime: _endtime,
-      //location: point.data,
+      geoLocation: _location,
       location: _location.geoPoint,
       note: _note,
       playersneeded: _playersneeded,

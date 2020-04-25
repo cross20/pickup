@@ -176,13 +176,17 @@ Route _createRoute(page) {
 Stream<QuerySnapshot> gamesSnapshots() {
   CollectionReference col = Firestore.instance.collection('Games');
 
-  /*Geoflutterfire geo = Geoflutterfire();
-  GeoFirePoint center = GeoFirePoint(47.0, 117.0);
-  geo
-      .collection(collectionRef: col)
-      .within(center: center, radius: 100, field: 'position');*/
-
   Query q = col.where('endtime', isGreaterThan: new DateTime.now());
+
+  Geoflutterfire geo = Geoflutterfire();
+  GeoFireCollectionRef geoRef = geo.collection(collectionRef: col);
+  GeoFirePoint center = GeoFirePoint(47.0, 117.0);
+
+  Stream<List<DocumentSnapshot> > stream = geoRef.within(center: center, radius: 100, field: 'position');
+
+  Stream<QuerySnapshot> qs = geoRef.snapshot();
+
+  //return qs;
 
   List<String> includedSports = new List<String>();
 
