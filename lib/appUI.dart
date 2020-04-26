@@ -24,9 +24,15 @@ BottomNavigationBar botNavBar (int current, Function onTap, BuildContext context
         onTap: onTap,);
 
 
+
+
+
+  
+
 /// This function is for when an bottom nav bar item is selected, this should be called
 /// in the switch case, it simply looks at the index, then calls the next page to be uploaded
 void newRoute(int index, BuildContext context) {
+
   switch (index) {
     case 0:
       Navigator.push(

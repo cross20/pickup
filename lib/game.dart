@@ -14,6 +14,7 @@ class Game {
   bool private;
   String sport;
   Timestamp starttime;
+  String userId;
 
   toString() {
     return this.endtime.toString() +
@@ -28,7 +29,9 @@ class Game {
         ', ' +
         this.sport +
         ', ' +
-        this.starttime.toString();
+        this.starttime.toString()+
+         ',' +
+        this.userId.toString();
   }
 
   // Default Constructor
@@ -40,7 +43,8 @@ class Game {
       this.playersneeded,
       this.private,
       this.sport,
-      this.starttime});
+      this.starttime,
+      this.userId});
   
   // Function that allows for deserializaiton of Game Objects from the 
   // firestore database. When we will be retreiving game information from the
@@ -58,6 +62,7 @@ class Game {
       private: data['private'] ?? false,
       sport: data['sport'] ?? '',
       starttime: data['starttime'] ?? '',
+      userId: data['userId'] ?? '',
     );
   }
   
@@ -81,6 +86,7 @@ class Game {
       private: data['private'] ?? false,
       sport: data['sport'] ?? '',
       starttime: data['starttime'] ?? '',
+      userId: data['userId'] ?? '',
     );
   }
 
@@ -97,5 +103,6 @@ class Game {
         'private': this.private,
         'sport': this.sport,
         'starttime': this.starttime,
+        'userId':this.userId
       };
 }
