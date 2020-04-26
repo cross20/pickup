@@ -23,21 +23,15 @@ import 'package:uuid/uuid.dart'; //for session token
 // Global Database linking to firestore
 Database instance = new Database();
 
-
 // this class is for initializing this page
 class CreateGamePage extends StatefulWidget {
-  CreateGamePage({Key key, this.title, this.userId:""}) : super(key: key);
+  CreateGamePage({Key key, this.title, this.userId: ""}) : super(key: key);
 
   final String title;
   String userId;
 
-  
-  _CreateGamePageState createState() => _CreateGamePageState(userId:this.userId);
-
-   
-
-  
-
+  _CreateGamePageState createState() =>
+      _CreateGamePageState(userId: this.userId);
 }
 
 // this class is for setting the state of the page, it is stateful so widgets within this class can change.
@@ -46,16 +40,10 @@ class CreateGamePage extends StatefulWidget {
 // and sent to the database.
 // Finally is the build method, where all the Widgets are that are needed for this UI
 class _CreateGamePageState extends State<CreateGamePage> {
-  
   String userId;
-  _CreateGamePageState({this.userId}){
+  _CreateGamePageState({this.userId}) {}
 
-  }
- 
-
- 
-  
-    // This is the Google Maps Place API
+  // This is the Google Maps Place API
   GoogleMapsPlaces _places =
       GoogleMapsPlaces(apiKey: "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0");
   String googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
@@ -88,8 +76,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
   int _currentNumPlay = 3;
 
   //init userId
-  
-   
 
   ///init values from Date and times of game
   var gameDate = DateTime.now();
@@ -133,8 +119,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
   /// this function is called when submit button is hit, this is where values are updated and casted to proper data type
   /// to be sent to the server
   void _updateData() {
+    print(userId);
 
-    print (userId);
     ///to pass in the timestamp of both startGameTime and endGameTime,
     Timestamp _starttime = Timestamp.fromDate(startGameTime);
     Timestamp _endtime = Timestamp.fromDate(endGameTime);
@@ -146,7 +132,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
     else
       priv = true;
 
-   
     //need to reset session token after submit button is selected
     _sessionToken = null;
 
@@ -157,12 +142,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
       // A game will be pushed to the database everytime the "submit" button is clicked
       creategame(_endtime, _location, msg, _currentNumPlay, priv, dropdownsport,
           _starttime, userId);
-
-          
-         
-          
     });
-    
   }
 
   //When this page is first created, the _onSearchChanged is added to the
@@ -232,20 +212,26 @@ class _CreateGamePageState extends State<CreateGamePage> {
   }
 
   // Function to create a new game and add to the firestore database.
-  void creategame(Timestamp _endtime, GeoPoint _location, String _note,
-      int _playersneeded, bool _private, String _sport, Timestamp _starttime, String _userId) {
+  void creategame(
+      Timestamp _endtime,
+      GeoPoint _location,
+      String _note,
+      int _playersneeded,
+      bool _private,
+      String _sport,
+      Timestamp _starttime,
+      String _userId) {
     Game game = new Game(
-      endtime: _endtime,
-      location: _location,
-      note: _note,
-      playersneeded: _playersneeded,
-      private: _private,
-      sport: _sport,
-      starttime: _starttime,
-      userId:_userId
-    );
+        endtime: _endtime,
+        location: _location,
+        note: _note,
+        playersneeded: _playersneeded,
+        private: _private,
+        sport: _sport,
+        starttime: _starttime,
+        userId: _userId);
     instance.addgame(game.toMap());
-    print ("Id in game is"+userId);
+    print("Id in game is" + userId);
   }
 
   ///this is so Text Widgets do not have to be re-written multiple times in the Widget build method
@@ -311,15 +297,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
   }
 
   ///For the selection of bottom nav items
-   void _onBotNavTap(int index) {
-      newRoute(index, context);
-    }
+  void _onBotNavTap(int index) {
+    newRoute(index, context);
+  }
 
   ///all the defined UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -524,7 +509,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
         tooltip: 'Increment',
         child: Text('Submit'),
       ),
-     
     );
   }
 }
