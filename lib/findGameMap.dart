@@ -354,7 +354,7 @@ class _FindGameMapState extends State<FindGameMap> {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('Games')
+            .collection('TestCollectionForMaps')
             .where('endtime', isGreaterThan: new DateTime.now())
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the

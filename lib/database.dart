@@ -15,7 +15,7 @@ class Database {
   }
 
   void addgame(var game) {
-    firestoreDb.collection('Games').add(game);
+    firestoreDb.collection('TestCollectionForMaps').add(game);
   }
 
  //Returns all the games information in array format

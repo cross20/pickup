@@ -3,6 +3,8 @@ import 'appUI.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'game.dart';
 import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 
 class GameDetailsPage extends StatefulWidget {
   // This variable will store the gameid
@@ -23,12 +25,28 @@ class GameDetailsPage extends StatefulWidget {
   // String formattedendtime = endtimeformatter.format(endtime);
 
   GameDetailsPage(this.gameid);
+
   @override
   _GameDetailsPageState createState() => _GameDetailsPageState();
 }
 
 class _GameDetailsPageState extends State<GameDetailsPage> {
   Game currentgame;
+
+  Completer<GoogleMapController> _controller = Completer();
+
+  static const LatLng _center = const LatLng(45.521563, -122.677433);
+
+  void _onMapCreated(GoogleMapController controller) {
+    _controller.complete(controller);
+  }
+
+  var gamedateformatter = new DateFormat('yMMMMEEEEd');
+
+  var starttimeformatter = new DateFormat("jm");
+
+  var endtimeformatter = new DateFormat("jm");
+
   @override
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
@@ -37,7 +55,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('Games')
+            .collection('TestCollectionForMaps')
             .document(widget.gameid)
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
@@ -83,37 +101,75 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      ListTile(
-                        leading: Icon(Icons.pin_drop),
-                        title: Text("1234 N Main St"),
+                      Expanded(
+                        child: ListTile(
+                          leading: Icon(Icons.pin_drop),
+                          title: Text(currentgame.address),
+                      
+                        ),
                       ),
-                      ListTile(
+
+                      Expanded(
+                        child: GoogleMap(
+                          onMapCreated: _onMapCreated,
+                          initialCameraPosition: CameraPosition(
+                        target: _center,
+                        zoom: 11.0
+                      )
+                      )
+                      ),
+
+                      Expanded(
+                        child: ListTile(
                         leading: Icon(Icons.person),
-                        title: Text("User123"),
+                        title: Text(currentgame.userid),
                       ),
-                      ListTile(
+                      ),
+                       Expanded(
+                        child:  ListTile(
                         leading: Icon(Icons.directions_run),
                         title: Text(currentgame.sport),
                       ),
-                      ListTile(
+                      ),
+                       Expanded(
+                        child:  ListTile(
                         leading: Icon(Icons.people),
                         title: Text(currentgame.playersneeded.toString()),
                       ),
-                      ListTile(
+                      ),
+                       Expanded(
+                        child:   ListTile(
                           leading: Icon(Icons.calendar_today),
-                          title: Text("Apr 26, 2020")),
-                      ListTile(
+                          title: Text(gamedateformatter.format(
+                              currentgame.starttime.toDate().toLocal()))),
+                      ),
+                       Expanded(
+                        child:   ListTile(
                         leading: Icon(Icons.timer),
-                        title: Text("5:30 PM"),
+                        title: Text(starttimeformatter
+                            .format(currentgame.starttime.toDate().toLocal())),
                       ),
-                      ListTile(
+                      ),
+                       Expanded(
+                        child: ListTile(
                         leading: Icon(Icons.timer_off),
-                        title: Text("6:30 PM"),
+                        title: Text(endtimeformatter
+                            .format(currentgame.endtime.toDate().toLocal())),
                       ),
+                      ),
+                       Expanded(
+                        child:  
                       ListTile(
                         leading: Icon(Icons.event_note),
-                        title: Text("Bring a ball"),
+                        title: Text(currentgame.note),
                       ),
+                      ),
+                      
+                     
+                     
+                    
+                    
+                    
                       RaisedButton(onPressed: () {}, child: Text("Join Game"))
                     ],
                   ),
