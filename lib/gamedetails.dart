@@ -142,33 +142,51 @@ void initState() {
                           title: Text(currentgame.address),
                       
                         ),
-                      
-
                       ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text(currentgame.userid),
-                      ),
-                       ListTile(
-                       leading: Icon(Icons.directions_run),
-                       title: Text(currentgame.sport),
-                      ),
-                       ListTile(
-                       leading: Icon(Icons.people),
-                       title: Text(currentgame.playersneeded.toString()),
-                      ),
-                       ListTile(
                          leading: Icon(Icons.calendar_today),
                          title: Text(gamedateformatter.format(
                              currentgame.starttime.toDate().toLocal()))),
-                       ListTile(
-                       leading: Icon(Icons.timer),
-                       title: Text(starttimeformatter
-                           .format(currentgame.starttime.toDate().toLocal())),
+
+
+                     
+                      Row( children: <Widget> [
+                             Expanded(
+                                                            child: ListTile(
+                       leading: Icon(Icons.directions_run),
+                       title: Text(currentgame.sport),
                       ),
-                       ListTile(
-                       leading: Icon(Icons.timer_off),
-                       title: Text(endtimeformatter
-                           .format(currentgame.endtime.toDate().toLocal())),
+                             ),
+                       Expanded(
+                                                child: ListTile(
+                         leading: Icon(Icons.people),
+                         title: Text(currentgame.playersneeded.toString()),
+                      ),
+                       ),
+                      ]
+                      ),
+                       
+                      Row(
+                        children: <Widget>[
+  Expanded(
+      child: ListTile(
+                         leading: Icon(Icons.timer),
+                         title: Text(starttimeformatter
+                             .format(currentgame.starttime.toDate().toLocal())),
+                        ),
+  ),
+                       Expanded(
+                                                child: ListTile(
+                         leading: Icon(Icons.timer_off),
+                         title: Text(endtimeformatter
+                             .format(currentgame.endtime.toDate().toLocal())),
+                      ),
+                       ),
+                        ],
+                      ),
+                     
+                      ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(currentgame.userid),
                       ),
                        ListTile(
                          leading: Icon(Icons.event_note),
@@ -191,7 +209,7 @@ void initState() {
                           onMapCreated: _onMapCreated,
                           initialCameraPosition: CameraPosition(
                         target: _center,
-                        zoom: 11,
+                        zoom: 15,
                       ),
                      markers: markerlist,
                       )
