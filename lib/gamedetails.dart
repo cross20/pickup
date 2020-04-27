@@ -31,15 +31,32 @@ class GameDetailsPage extends StatefulWidget {
 }
 
 class _GameDetailsPageState extends State<GameDetailsPage> {
+ 
+
+void _getUserLocation() async {
+    DocumentSnapshot query = await Firestore.instance.collection('TestCollectionForMaps').document(widget.gameid).get();
+      // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
+      setState(() {
+         _center = LatLng(query.data['location'].latitude, query.data['location'].longitude);
+      });
+    }
+
+
   Game currentgame;
 
-  Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController _controller;
 
-  static const LatLng _center = const LatLng(45.521563, -122.677433);
 
-  void _onMapCreated(GoogleMapController controller) {
-    _controller.complete(controller);
+  static  LatLng _center;
+
+void _onMapCreated(GoogleMapController controller) {
+    _controller = controller;
   }
+
+  Set<Marker> markerlist = new Set();
+
+  
+
 
   var gamedateformatter = new DateFormat('yMMMMEEEEd');
 
@@ -48,6 +65,16 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   var endtimeformatter = new DateFormat("jm");
 
   @override
+void initState() {
+    super.initState();
+    // Initialize the current user location on first map build
+    _getUserLocation();
+
+
+  }
+
+   
+
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
     // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
@@ -76,6 +103,14 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                 private: snap.data['private'],
                 sport: snap.data['sport'],
                 starttime: snap.data['starttime']);
+
+                markerlist.add(new Marker(
+                  markerId: MarkerId(widget.gameid),
+                  position: LatLng(
+                    currentgame.location.latitude,
+                    currentgame.location.longitude
+                  ),
+                ));
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
@@ -101,71 +136,87 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Expanded(
-                        child: ListTile(
+                     
+                         ListTile(
                           leading: Icon(Icons.pin_drop),
                           title: Text(currentgame.address),
                       
                         ),
-                      ),
+                      
 
-                      Expanded(
+                      ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(currentgame.userid),
+                      ),
+                       ListTile(
+                       leading: Icon(Icons.directions_run),
+                       title: Text(currentgame.sport),
+                      ),
+                       ListTile(
+                       leading: Icon(Icons.people),
+                       title: Text(currentgame.playersneeded.toString()),
+                      ),
+                       ListTile(
+                         leading: Icon(Icons.calendar_today),
+                         title: Text(gamedateformatter.format(
+                             currentgame.starttime.toDate().toLocal()))),
+                       ListTile(
+                       leading: Icon(Icons.timer),
+                       title: Text(starttimeformatter
+                           .format(currentgame.starttime.toDate().toLocal())),
+                      ),
+                       ListTile(
+                       leading: Icon(Icons.timer_off),
+                       title: Text(endtimeformatter
+                           .format(currentgame.endtime.toDate().toLocal())),
+                      ),
+                       ListTile(
+                         leading: Icon(Icons.event_note),
+                         title: Text(currentgame.note),
+                       ),
+                      
+
+                      _center == null ? Container(
+                      child: Center(
+                        child: Text(
+                          'loading map..',
+                          style: TextStyle(
+                              fontFamily: 'Avenir-Medium',
+                              color: Colors.grey[400]),
+                        ),
+                      ),
+                    )  : Expanded(
+                        flex: 2,
                         child: GoogleMap(
                           onMapCreated: _onMapCreated,
                           initialCameraPosition: CameraPosition(
                         target: _center,
-                        zoom: 11.0
+                        zoom: 11,
+                      ),
+                     markers: markerlist,
                       )
-                      )
                       ),
-
-                      Expanded(
-                        child: ListTile(
-                        leading: Icon(Icons.person),
-                        title: Text(currentgame.userid),
-                      ),
-                      ),
-                       Expanded(
-                        child:  ListTile(
-                        leading: Icon(Icons.directions_run),
-                        title: Text(currentgame.sport),
-                      ),
-                      ),
-                       Expanded(
-                        child:  ListTile(
-                        leading: Icon(Icons.people),
-                        title: Text(currentgame.playersneeded.toString()),
-                      ),
-                      ),
-                       Expanded(
-                        child:   ListTile(
-                          leading: Icon(Icons.calendar_today),
-                          title: Text(gamedateformatter.format(
-                              currentgame.starttime.toDate().toLocal()))),
-                      ),
-                       Expanded(
-                        child:   ListTile(
-                        leading: Icon(Icons.timer),
-                        title: Text(starttimeformatter
-                            .format(currentgame.starttime.toDate().toLocal())),
-                      ),
-                      ),
-                       Expanded(
-                        child: ListTile(
-                        leading: Icon(Icons.timer_off),
-                        title: Text(endtimeformatter
-                            .format(currentgame.endtime.toDate().toLocal())),
-                      ),
-                      ),
-                       Expanded(
-                        child:  
-                      ListTile(
-                        leading: Icon(Icons.event_note),
-                        title: Text(currentgame.note),
-                      ),
-                      ),
-                      
                      
+                  //    home: _userlocation == null
+                  // ? Container(
+                  //     child: Center(
+                  //       child: Text(
+                  //         'loading map..',
+                  //         style: TextStyle(
+                  //             fontFamily: 'Avenir-Medium',
+                  //             color: Colors.grey[400]),
+                  //       ),
+                  //     ),
+                  //   )
+                  // // Once the initial position is not null, create the google map.
+                  // : GoogleMap(
+                  //     onMapCreated: _onMapCreated,
+                  //     initialCameraPosition: CameraPosition(
+                  //       target: _userlocation,
+                  //       zoom: 11.0,
+                  //     ),
+                  //     markers: markerlist,
+                  //   ),
                      
                     
                     
