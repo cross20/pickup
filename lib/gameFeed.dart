@@ -3,9 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:pickup_app/appUI.dart';
 import 'package:pickup_app/globals.dart';
+import 'package:rxdart/rxdart.dart';
 import 'filterPage.dart';
 import 'findGameMap.dart';
-import 'game.dart';
+
+Firestore _firestore = Firestore.instance;
+Geoflutterfire geo;
+Stream<List<DocumentSnapshot>> stream;
 
 class GameFeed extends StatefulWidget {
   GameFeedState createState() => GameFeedState();
@@ -18,9 +22,20 @@ class GameFeedState extends State<GameFeed> {
   /// Set to `true` to show games in the feed, set to `false` to show games in the map.
   bool _showGameFeed = true;
 
+  var radius = BehaviorSubject<double>.seeded(1.0);
+
   @override
   initState() {
     super.initState();
+    geo = Geoflutterfire();
+    GeoFirePoint center = geo.point(latitude: 48.0, longitude: 117.0);
+    stream = radius.switchMap((rad) {
+      print('rad is $rad');
+      var collectionReference = _firestore.collection(dbCol);
+      return geo
+          .collection(collectionRef: collectionReference)
+          .within(center: center, radius: 100, field: 'point', strictMode: true);
+    });
   }
 
   /// Updates the value of [_showGameFeed] using [setState].
@@ -64,6 +79,27 @@ class GameFeedState extends State<GameFeed> {
           builder: (BuildContext context, bool value, Widget child) {
             return Expanded(
                 child: StreamBuilder(
+              stream: stream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                if (snapshot.hasError) {
+                  return new Text('Error: ${snapshot.error}');
+                }
+                if (snapshot.connectionState == ConnectionState.active && snapshot.hasData && snapshot.data.length > 0) {
+                  //print('data ${snapshot.data.toString()}. length ${snapshot.data.length}');
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        createGameCard(context, snapshot.data[index]),
+                  );
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            )
+
+                /*StreamBuilder(
               stream: gamesSnapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -76,7 +112,8 @@ class GameFeedState extends State<GameFeed> {
                         createGameCard(
                             context, snapshot.data.documents[index]));
               },
-            ));
+            )*/
+                );
           });
     } else {
       //Display map
@@ -169,10 +206,16 @@ Route _createRoute(page) {
   );
 }
 
+/*Stream<List<DocumentSnapshot>> gameSnapshots() {
+  return geo
+      .collection(collectionRef: Firestore.instance.collection(dbCol))
+      .within(center: center, radius: 100.0, field: 'point');
+}*/
+
 /// Retrieves the games from the database based on the filter values selected. Also, filters out
 /// games which have ended.
 Stream<QuerySnapshot> gamesSnapshots() {
-  CollectionReference col = Firestore.instance.collection('Games');
+  CollectionReference col = Firestore.instance.collection(dbCol);
 
   Query q = col.where('endtime', isGreaterThan: new DateTime.now());
 
@@ -181,7 +224,7 @@ Stream<QuerySnapshot> gamesSnapshots() {
   GeoFirePoint center = GeoFirePoint(47.0, 117.0);
 
   Stream<List<DocumentSnapshot>> stream =
-      geoRef.within(center: center, radius: 100, field: 'position');
+      geoRef.within(center: center, radius: 100, field: 'location');
 
   Stream<QuerySnapshot> qs = geoRef.snapshot();
 

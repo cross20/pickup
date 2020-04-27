@@ -95,7 +95,7 @@ class Game {
   Map<String, dynamic> toMap() => {
         'endtime': this.endtime,
         'point': this.geoLocation.data,
-        'position': this.location,
+        'location': this.location,
         'note': this.note,
         'playersneeded': this.playersneeded,
         'private': this.private,

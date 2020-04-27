@@ -211,7 +211,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
       starttime: _starttime,
     );
     instance.addgame(game.toMap());
-    //Firestore.instance.collection('Games').add({'endtime': game.endtime, 'location':_location, 'position': game.location, 'note': game.note, 'playersneeded': game.playersneeded, 'private': game.private, 'sport': game.sport, 'endtime': game.endtime});
+    //Firestore.instance.collection(dbCol).add({'endtime': game.endtime, 'location':_location, 'position': game.location, 'note': game.note, 'playersneeded': game.playersneeded, 'private': game.private, 'sport': game.sport, 'endtime': game.endtime});
   }
 
   // this is so Text Widgets do not have to be re-written multiple times in the Widget build method

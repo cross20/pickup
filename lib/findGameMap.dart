@@ -1,20 +1,14 @@
 ///This file is everything in map.dart, just no longer has the Scaffold/Material App Widget
 ///file just for the map
-import 'dart:convert';
-import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:numberpicker/numberpicker.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'globals.dart';
 // For global device stats
-import 'splashscreen.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:fluster/fluster.dart';
 import 'package:meta/meta.dart';
@@ -186,8 +180,8 @@ class _FindGameMapState extends State<FindGameMap> {
           markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
           // Get latitude and longitude from the database
           position: LatLng(
-              snap.data.documents.elementAt(i).data['location'].latitude,
-              snap.data.documents.elementAt(i).data['location'].longitude),
+              snap.data.documents.elementAt(i).data['point']['geopoint'].latitude,
+              snap.data.documents.elementAt(i).data['point']['geopoint'].longitude),
           zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
@@ -349,7 +343,7 @@ class _FindGameMapState extends State<FindGameMap> {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('Games')
+            .collection(dbCol)
             .where('endtime', isGreaterThan: new DateTime.now())
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
