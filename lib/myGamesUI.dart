@@ -3,38 +3,105 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pickup_app/createGame.dart';
 
-
 class MyGamesPage extends StatefulWidget {
   MyGamesPage({Key key, this.userId: ""}) : super(key: key);
-  String userId;
+  final userId;
 
   _MyGamesPageState createState() => _MyGamesPageState(userId: this.userId);
 }
 
 class _MyGamesPageState extends State<MyGamesPage> {
   String userId;
+  //global ref to all games
+  CollectionReference col = Firestore.instance.collection('Games');
+
   _MyGamesPageState({this.userId});
 
   Stream<QuerySnapshot> gamesSnapshots() {
+    //function to display desired games (can be changed)
     CollectionReference col = Firestore.instance.collection('Games');
-    return col.where('userId', isEqualTo: this.userId).snapshots();
+     return col.where('userId', isEqualTo: this.userId).snapshots();
   }
 
-  Widget myGamesList() {
-    return Expanded(
-        child: StreamBuilder(
-      stream: gamesSnapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Text('No created games');
-        }
-        return ListView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: snapshot.data.documents.length,
-            itemBuilder: (BuildContext context, int index) =>
-                listBody(context, snapshot.data.documents[index]));
-      },
-    ));
+  Widget createdGamesList() {
+    Query q = col.where('userId', isEqualTo: this.userId);
+
+    if (q.snapshots().isEmpty != true) {
+      return Expanded(
+          child: StreamBuilder(
+        stream: gamesSnapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Text('Loading...');
+          }
+          return ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: snapshot.data.documents.length,
+              itemBuilder: (BuildContext context, int index) =>
+                  listBody(context, snapshot.data.documents[index]));
+        },
+      ));
+    } else {
+      return (Expanded(
+        child: Center(
+            child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('You haven\'t created a game yet!'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RaisedButton(
+                child: Text('Create Game'),
+                onPressed: () => {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => CreateGamePage()))
+                },
+              ),
+            )
+          ],
+        )),
+      ));
+    }
+  }
+
+  Widget joinedGamesList() {
+    CollectionReference col = Firestore.instance.collection('Games');
+    Query q = col.where('userId', isEqualTo: this.userId);
+    bool test = true;
+    if (test != true) {
+      return Expanded(
+          child: StreamBuilder(
+        stream: gamesSnapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Text('Loading...');
+          }
+          return ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: snapshot.data.documents.length,
+              itemBuilder: (BuildContext context, int index) =>
+                  listBody(context, snapshot.data.documents[index]));
+        },
+      ));
+    } else {
+      return (Expanded(
+        child: Center(
+            child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('You haven\'t joined any games yet!'),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(8.0),
+                child:
+                    Text('Navigate to the game feed to find games near you!'))
+          ],
+        )),
+      ));
+    }
   }
 
   Widget listBody(BuildContext context, DocumentSnapshot document) {
@@ -110,18 +177,17 @@ class _MyGamesPageState extends State<MyGamesPage> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('My Games')),
       body: Column(
         children: <Widget>[
-          myGamesList(),
+          Container(
+            child: createdGamesList(),
+          ),
+          //Container(
+            //child: joinedGamesList(),
+          //)
         ],
       ),
     );
