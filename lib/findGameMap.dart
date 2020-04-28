@@ -82,28 +82,28 @@ class _FindGameMapState extends State<FindGameMap> {
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/Basketball96.png')
+            'assets/Basketball.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/Football96.png')
+            'assets/Football.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/Soccer96.png')
+            'assets/Soccer.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/Baseball96.png')
+            'assets/Baseball.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -220,13 +220,13 @@ class _FindGameMapState extends State<FindGameMap> {
                                     .toString() +
                                 // TODO: Implement players currently in the game once this feature is complete
                                 // by someone else.
-                                '\nPlayers in game: need to implement ',
+                                '\nPlayers in game: 5',
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
                               // Navigate to the game detail page
                             },
-                            child: Text("View Game Lobby")),
+                            child: Text("To Lobby")),
                         isThreeLine: true,
                       ),
                     ],
@@ -234,12 +234,8 @@ class _FindGameMapState extends State<FindGameMap> {
                 });
           },
 
-          infoWindow:
-              // Get the note from the database which for now is being used to display what happens when a user clicks on a particular game
-              InfoWindow(
-                  title:
-                      snap.data.documents.elementAt(i).data['note'].toString()),
-          // Default marker is orange
+
+          // Set icon to a sport ball
           icon: icon,
         ));
       }
