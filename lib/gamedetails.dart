@@ -34,7 +34,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
  
 
 void _getUserLocation() async {
-    DocumentSnapshot query = await Firestore.instance.collection('TestCollectionForMaps').document(widget.gameid).get();
+    DocumentSnapshot query = await Firestore.instance.collection('Games').document(widget.gameid).get();
       // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
       setState(() {
          _center = LatLng(query.data['location'].latitude, query.data['location'].longitude);
@@ -82,7 +82,7 @@ void initState() {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('TestCollectionForMaps')
+            .collection('Games')
             .document(widget.gameid)
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
@@ -94,8 +94,8 @@ void initState() {
             AsyncSnapshot<DocumentSnapshot> snap = snapshot;
             currentgame = new Game(
                 id: widget.gameid,
-                userid: snap.data['userid'].toString(),
-                address: snap.data['address'],
+                userid: "UserId",
+                address: "123 Test Ln Portland, OR 97229",
                 endtime: snap.data['endtime'],
                 location: snap.data['location'],
                 note: snap.data['note'],

@@ -349,7 +349,7 @@ class _MapPageState extends State<MapPage> {
         // Only fetch current games
         stream: Firestore.instance
             .collection('Games')
-            .where('endtime', isGreaterThan: new DateTime.now())
+            // .where('endtime', isGreaterThan: new DateTime.now())
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
             // google map
