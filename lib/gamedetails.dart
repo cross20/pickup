@@ -5,6 +5,7 @@ import 'game.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import 'globals.dart';
 
 class GameDetailsPage extends StatefulWidget {
   // This variable will store the gameid
@@ -34,7 +35,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
  
 
 void _getUserLocation() async {
-    DocumentSnapshot query = await Firestore.instance.collection('Games').document(widget.gameid).get();
+    DocumentSnapshot query = await Firestore.instance.collection(dbCol).document(widget.gameid).get();
       // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
       setState(() {
          _center = LatLng(query.data['location'].latitude, query.data['location'].longitude);
@@ -82,7 +83,7 @@ void initState() {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('Games')
+            .collection(dbCol)
             .document(widget.gameid)
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the

@@ -1,22 +1,17 @@
-/////This is the game creation page
-
-import 'dart:convert';
-import 'package:geocoder/services/base.dart';
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:dio/dio.dart';
 import 'appUI.dart';
 import 'authentication.dart';
 import 'authroot.dart';
 import 'splashscreen.dart';
 
-/// google places packages
+// google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
 import 'package:uuid/uuid.dart'; //for session token
 
@@ -52,7 +47,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   var uuid = new Uuid();
   String _sessionToken;
   List<String> _placesList = [];
-  GeoPoint _location;
+  GeoFirePoint _location;
 
   // init value of dropdownmenu
   String dropdownsport = "Basketball";
@@ -214,7 +209,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
-      GeoPoint _location,
+      GeoFirePoint _location,
       String _note,
       int _playersneeded,
       bool _private,
@@ -223,7 +218,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
       String _userId) {
     Game game = new Game(
         endtime: _endtime,
-        location: _location,
+        geoLocation: _location,
+        location: _location.geoPoint,
         note: _note,
         playersneeded: _playersneeded,
         private: _private,
@@ -234,7 +230,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     print("Id in game is" + userId);
   }
 
-  ///this is so Text Widgets do not have to be re-written multiple times in the Widget build method
+  // this is so Text Widgets do not have to be re-written multiple times in the Widget build method
   Container text(String key, double maxWidth) {
     return Container(
         child: Text(
@@ -277,7 +273,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     var latitude = double.parse(res[0]);
     var longitude = double.parse(res[1]);
 
-    _location = GeoPoint(latitude, longitude);
+    _location = GeoFirePoint(latitude, longitude);
   }
 
   //For the list tiles of the list view for the google places search

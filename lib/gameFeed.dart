@@ -1,45 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:pickup_app/appUI.dart';
+import 'package:pickup_app/globals.dart';
+import 'package:rxdart/rxdart.dart';
+import 'filterPage.dart';
 import 'findGameMap.dart';
 
-/// Stores a boolean value for each [sport] that determines wheather or not a game should
-/// be loaded from the database.
-Map includeSport = {
-  'baseball': true,
-  'basketball': true,
-  'football': true,
-  'soccer': true
-};
+Firestore _firestore = Firestore.instance;
+Geoflutterfire geo;
+Stream<List<DocumentSnapshot>> stream;
 
-class GameFeedState extends StatefulWidget {
-  GameFeedState({Key key }) : super(key: key);
-
-  
-
-  _GameFeedState createState() => _GameFeedState();
+class GameFeed extends StatefulWidget {
+  GameFeedState createState() => GameFeedState();
 }
 
-  // Formats the content that will appear in the list item by item. The content is formatted
-  // using a container object.
-  // The main body for the game feed. Uses a column to manage multiple widgets in the body.
-class _GameFeedState extends State<GameFeedState> {
-  bool _list = true;
+// Formats the content that will appear in the list item by item. The content is formatted
+// using a container object.
+// The main body for the game feed. Uses a column to manage multiple widgets in the body.
+class GameFeedState extends State<GameFeed> {
+  /// Set to `true` to show games in the feed, set to `false` to show games in the map.
+  bool _showGameFeed = true;
+
+  var radius = BehaviorSubject<double>.seeded(1.0);
 
   @override
-  initState(){
+  initState() {
     super.initState();
-    _list = true;
+    geo = Geoflutterfire();
+    GeoFirePoint center = geo.point(latitude: 48.0, longitude: 117.0);
+    stream = radius.switchMap((rad) {
+      print('rad is $rad');
+      var collectionReference = _firestore.collection(dbCol);
+      return geo
+          .collection(collectionRef: collectionReference)
+          .within(center: center, radius: 100, field: 'point', strictMode: true);
+    });
   }
 
-  void setList(bool list){
+  /// Updates the value of [_showGameFeed] using [setState].
+  void shouldShowGameFeed(bool showFeed) {
     setState(() {
-      _list = list;
+      this._showGameFeed = showFeed;
     });
   }
 
   /// Formats each individual game to appear in the listView.builder.
-  Widget listBody(BuildContext context, DocumentSnapshot document) {
+  Widget createGameCard(BuildContext context, DocumentSnapshot document) {
     DateTime startTime = (document['starttime'] as Timestamp).toDate();
     DateTime endTime = (document['endtime'] as Timestamp).toDate();
 
@@ -62,195 +69,119 @@ class _GameFeedState extends State<GameFeedState> {
     );
   }
 
-
-  ///Function to determine with Widget to show on game feed route. If _list is set to true (i.e,
+  /// Function to determine with Widget to show on game feed route. If list is set to true (i.e,
   /// the List Button was last selected, then show list, else show map)
-  Widget listOrMap (){
-    if (_list == true){
+  Widget feedOrMap() {
+    if (_showGameFeed == true) {
       //Display list
-      return 
-            Expanded(
-              child: StreamBuilder(
-                stream: gamesSnapshots(),
-                builder: (context, snapshot) {
-                  if(!snapshot.hasData) {
-                    return const Text('Loading...');
-                  }
+      return ValueListenableBuilder(
+          valueListenable: filter.baseball,
+          builder: (BuildContext context, bool value, Widget child) {
+            return Expanded(
+                child: /*StreamBuilder(
+              stream: stream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                if (snapshot.hasError) {
+                  return new Text('Error: ${snapshot.error}');
+                }
+                if (snapshot.connectionState == ConnectionState.active && snapshot.hasData && snapshot.data.length > 0) {
+                  //print('data ${snapshot.data.toString()}. length ${snapshot.data.length}');
                   return ListView.builder(
                     padding: const EdgeInsets.all(8),
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (BuildContext context, int index) => listBody(context, snapshot.data.documents[index])
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        createGameCard(context, snapshot.data[index]),
                   );
-                },
-              )
-            );
-    }
-    else {
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            )*/
+
+                StreamBuilder(
+              stream: gamesSnapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text('Loading...');
+                }
+                return ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        createGameCard(
+                            context, snapshot.data.documents[index]));
+              },
+            )
+                );
+          });
+    } else {
       //Display map
-      return Expanded(child: SizedBox(height:200.0, child: new FindGameMap()));//Column(children: <Widget>[Text("This is for the map")],);
+      return Expanded(
+          child: SizedBox(
+              height: 200.0,
+              child:
+                  new FindGameMap())); //Column(children: <Widget>[Text("This is for the map")],);
     }
   }
 
-    ///This is to determine the new Route that must be selected
-    /// to navigate to depending on which bottom nav button is selected 
-    ///  newRoute() is defined in appUI.dart file
-    void _onBotNavTap(int index) {
-      newRoute(index, context);
-    }
-
+  /// This is to determine the new Route that must be selected
+  /// to navigate to depending on which bottom nav button is selected
+  /// newRoute() is defined in appUI.dart file
+  void _onBotNavTap(int index) {
+    newRoute(index, context);
+  }
 
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      body: //Center(
-        //child:
-        Column(
-          children: <Widget>[
-            Container(
-              color: Colors.blue,
-              child: Row(
-                // Filter by location (current or specified).
-                children: <Widget>[
-                  FlatButton(
-                    onPressed: null, // TODO: Display a search bar and keyboard to search for a location.
-                    child: Text('Location'),
-                  ),
-                  // Choose how to view games. Either in list or map form.
-                  Expanded(
-                    child: ButtonBar(
-                      alignment: MainAxisAlignment.center,
-                      buttonMinWidth: 80.0,
-                      children: <Widget>[
-                        RaisedButton(
-                          onPressed: () => {
-                            //set list bool to true
-                            setList(true)
-                          }, // TODO: Load the list view.
-                          child: Text('List',),
+      //appBar: AppBar(automaticallyImplyLeading: false),
+      body: Column(
+        children: <Widget>[
+          Container(
+            color: Colors.blue,
+            child: Row(
+              // Filter by location (current or specified).
+              children: <Widget>[
+                FlatButton(
+                  onPressed:
+                      null, // TODO: Display a search bar and keyboard to search for a location.
+                  child: Icon(Icons.edit_location),
+                ),
+                // Choose how to view games. Either in list or map form.
+                Expanded(
+                  child: ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    buttonMinWidth: 80.0,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: () => {shouldShowGameFeed(true)},
+                        child: Text(
+                          'List',
                         ),
-                        RaisedButton(
-                          onPressed: () => {
-                            setList(false)  
-                          }, // TODO: Load the map view.
-                          child: Text('Map',),
+                      ),
+                      RaisedButton(
+                        onPressed: () => {shouldShowGameFeed(false)},
+                        child: Text(
+                          'Map',
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
-                  FlatButton(
-                    onPressed: () {Navigator.of(context).push(_createRoute(FilterPage()));}, // TODO: Determine which filter options are needed and to display them.
-                    child: Text('Filter'),
-                  )
-                ],
-              ),
-            ),
-            listOrMap(),
-          ],
-        ), 
-     
-    );
-  }}
-  
-class GameFeed extends StatefulWidget {
-  GameFeed({Key key}) : super(key: key);
-
-  @override
-  _GameFeed createState() => _GameFeed();
-}
-
-class _GameFeed extends State<GameFeed> {
-  @override
-  Widget build(BuildContext context) {
-    return Text('temp');
-  }
-}
-
-/// Used to manage the various filter options for organizing Game objects as they appear in the
-/// game feed and on the map.
-class FilterPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Icon(
-              Icons.close,
+                ),
+                // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).push(_createRoute(FilterPage()));
+                  },
+                  child: Icon(Icons.filter_list),
+                )
+              ],
             ),
           ),
-          Spacer(),
-          FlatButton(
-              onPressed: () {
-                // TODO: Figure out how to refresh the games that appear in the listView.builder.
-                Navigator.pop(context);
-              },
-              child: Icon(
-                Icons.done,
-              )),
+          feedOrMap(),
         ],
       ),
-      body: StatefulFilterPage(),
-    );
-  }
-}
-
-class StatefulFilterPage extends StatefulWidget {
-  StatefulFilterPage({Key key}) : super(key: key);
-
-  @override
-  _StatefulFilterPage createState() => _StatefulFilterPage();
-}
-
-class _StatefulFilterPage extends State<StatefulFilterPage> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: NeverScrollableScrollPhysics(),
-      children: <Widget>[
-        CheckboxListTile(
-          title: const Text('Basketball'),
-          value: includeSport['basketball'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['basketball'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Football'),
-          value: includeSport['football'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['football'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Soccer'),
-          value: includeSport['soccer'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['soccer'] = value;
-            });
-          },
-        ),
-        CheckboxListTile(
-          title: const Text('Baseball'),
-          value: includeSport['baseball'],
-          onChanged: (bool value) {
-            setState(() {
-              includeSport['baseball'] = value;
-            });
-          },
-        ),
-        Text('Date picker goes here') // TODO: Implement dateTimePicker here.
-      ],
     );
   }
 }
@@ -275,42 +206,55 @@ Route _createRoute(page) {
   );
 }
 
+/*Stream<List<DocumentSnapshot>> gameSnapshots() {
+  return geo
+      .collection(collectionRef: Firestore.instance.collection(dbCol))
+      .within(center: center, radius: 100.0, field: 'point');
+}*/
+
+/// Retrieves the games from the database based on the filter values selected. Also, filters out
+/// games which have ended.
 Stream<QuerySnapshot> gamesSnapshots() {
-  //return Firestore.instance.collection('Games').where('endtime', isGreaterThan: new DateTime.now()).snapshots();
+  CollectionReference col = Firestore.instance.collection(dbCol);
 
-  CollectionReference col = Firestore.instance.collection('Games');
+  //Query q = col.where('playersneeded', isGreaterThan: 0);
 
-  bool includeSports = false;
-  for (bool shouldInclude in includeSport.values) {
-    if (shouldInclude) {
-      includeSports = true;
-    }
+  Geoflutterfire geo = Geoflutterfire();
+  GeoFireCollectionRef geoRef = geo.collection(collectionRef: col);
+  GeoFirePoint center = GeoFirePoint(47.0, 117.0);
+
+  Stream<List<DocumentSnapshot>> stream =
+      geoRef.within(center: center, radius: 100, field: 'location');
+
+  Stream<QuerySnapshot> qs = geoRef.snapshot();
+
+  //return qs;
+
+  List<String> includedSports = new List<String>();
+
+  if (filter.baseball.value) {
+    includedSports.add('Baseball');
   }
 
-  if (!includeSports) {
-    return col
-        .where('sport', isEqualTo: 'None')
-        // .where('endtime', isGreaterThan: new DateTime.now())
-        .snapshots();
+  if (filter.basketball.value) {
+    includedSports.add('Basketball');
   }
 
-  if (includeSport['baseball']) {
-    col.where('sport', isEqualTo: 'Baseball');
+  if (filter.football.value) {
+    includedSports.add('Football');
   }
 
-  if (includeSport['basketball']) {
-    col.where('sport', isEqualTo: 'Basketball');
+  if (filter.soccer.value) {
+    includedSports.add('Soccer');
   }
 
-  if (includeSport['football']) {
-    col.where('sport', isEqualTo: 'Football');
+  if (includedSports.isEmpty) {
+    //return q.limit(0).snapshots();
   }
 
-  if (includeSport['soccer']) {
-    col.where('sport', isEqualTo: 'Soccer');
-  }
+  Query q = col.where('sport', whereIn: includedSports.toList());
 
-  return col.where('playersneeded', isGreaterThan: 0).snapshots();
+  return q.snapshots();
 }
 
 /// Formats DateTime objects for games. Returns a string which describes a game's current status:

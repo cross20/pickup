@@ -1,19 +1,13 @@
 ///file just for the map
-import 'dart:convert';
-import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:numberpicker/numberpicker.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'globals.dart';
 // For global device stats
-import 'splashscreen.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:fluster/fluster.dart';
 import 'package:meta/meta.dart';
@@ -348,8 +342,8 @@ class _MapPageState extends State<MapPage> {
     return new StreamBuilder(
         // Only fetch current games
         stream: Firestore.instance
-            .collection('Games')
-            // .where('endtime', isGreaterThan: new DateTime.now())
+            .collection(dbCol)
+            // .where('endtime', isGreaterThan: new DateTime.now()) // TODO: Filter by time.
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
             // google map

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pickup_app/createGame.dart';
+import 'globals.dart';
 
 class MyGamesPage extends StatefulWidget {
   MyGamesPage({Key key, this.userId: ""}) : super(key: key);
@@ -13,13 +14,13 @@ class MyGamesPage extends StatefulWidget {
 class _MyGamesPageState extends State<MyGamesPage> {
   String userId;
   //global ref to all games
-  CollectionReference col = Firestore.instance.collection('Games');
+  CollectionReference col = Firestore.instance.collection(dbCol);
 
   _MyGamesPageState({this.userId});
 
   Stream<QuerySnapshot> gamesSnapshots() {
     //function to display desired games (can be changed)
-    CollectionReference col = Firestore.instance.collection('Games');
+    CollectionReference col = Firestore.instance.collection(dbCol);
      return col.where('userId', isEqualTo: this.userId).snapshots();
   }
 
@@ -67,7 +68,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
   }
 
   Widget joinedGamesList() {
-    CollectionReference col = Firestore.instance.collection('Games');
+    CollectionReference col = Firestore.instance.collection(dbCol);
     Query q = col.where('userId', isEqualTo: this.userId);
     bool test = true;
     if (test != true) {

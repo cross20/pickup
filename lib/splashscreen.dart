@@ -1,20 +1,9 @@
-///this is the "home" screen
-import 'dart:convert';
-import 'package:pickup_app/myGamesUI.dart';
-
-import 'game.dart';
-import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:numberpicker/numberpicker.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:intl/intl.dart';
 import 'authentication.dart';
-import 'dart:async';
 import 'gameFeed.dart';
 import 'createGame.dart';
+import 'myGamesUI.dart';
 
 class SplashScreenPage extends StatefulWidget {
   SplashScreenPage(
@@ -55,12 +44,13 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   }
 
 //changes the state of userid to the current user id in the session
-  getUserId(){
- widget.auth.getCurrentUser().then((user) {
+  getUserId() {
+    widget.auth.getCurrentUser().then((user) {
       setState(() {
         _userId = user.uid.toString();
       });
-    });  }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +59,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     _pageOptions = List();
 
     //pages are added to the list after this widget is built
-    _pageOptions.add(GameFeedState());
+    _pageOptions.add(GameFeed());
     _pageOptions.add(CreateGamePage(userId: _userId));
     _pageOptions.add(MyGamesPage(userId: _userId));
 
