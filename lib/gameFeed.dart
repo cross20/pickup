@@ -290,7 +290,7 @@ Stream<QuerySnapshot> gamesSnapshots() {
   if (!includeSports) {
     return col
         .where('sport', isEqualTo: 'None')
-        .where('endtime', isGreaterThan: new DateTime.now())
+        // .where('endtime', isGreaterThan: new DateTime.now())
         .snapshots();
   }
 
@@ -310,7 +310,7 @@ Stream<QuerySnapshot> gamesSnapshots() {
     col.where('sport', isEqualTo: 'Soccer');
   }
 
-  return col.where('endtime', isGreaterThan: new DateTime.now()).snapshots();
+  return col.where('playersneeded', isGreaterThan: 0).snapshots();
 }
 
 /// Formats DateTime objects for games. Returns a string which describes a game's current status:
