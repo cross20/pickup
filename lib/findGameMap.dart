@@ -18,7 +18,7 @@ import 'splashscreen.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:fluster/fluster.dart';
 import 'package:meta/meta.dart';
-
+import 'gamedetails.dart';
 
 
 // Set of markers that is used by the google Map API to place game locations on map
@@ -225,6 +225,10 @@ class _FindGameMapState extends State<FindGameMap> {
                         trailing: RaisedButton(
                             onPressed: () {
                               // Navigate to the game detail page
+                              Navigator.push(
+                                context, MaterialPageRoute(             // Pass the game ID to the page so we can access data for the specific game
+                                  builder: (context) => GameDetailsPage(snap.data.documents.elementAt(i).documentID))
+                              );
                             },
                             child: Text("To Lobby")),
                         isThreeLine: true,
