@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:pickup_app/myGamesUI.dart';
+
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +39,8 @@ class MyApp extends StatelessWidget {
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),
         '/gameFeed':(BuildContext context) => GameFeedState(),
-        '/gameFeed/details':(BuildContext context) => GameDetailsPage(null),
+        '/myGames':(BuildContext context) => MyGamesPage(),
+
       }
     );
   }

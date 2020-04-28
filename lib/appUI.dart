@@ -2,6 +2,7 @@
 /// defining them in one place and calling on them over multiple Widgets allows for more efficiency 
 
 import 'package:flutter/material.dart';
+import 'package:pickup_app/myGamesUI.dart';
 import 'createGame.dart';
 import 'gameFeed.dart';
 
@@ -23,9 +24,15 @@ BottomNavigationBar botNavBar (int current, Function onTap, BuildContext context
         onTap: onTap,);
 
 
+
+
+
+  
+
 /// This function is for when an bottom nav bar item is selected, this should be called
 /// in the switch case, it simply looks at the index, then calls the next page to be uploaded
 void newRoute(int index, BuildContext context) {
+
   switch (index) {
     case 0:
       Navigator.push(
@@ -36,12 +43,12 @@ void newRoute(int index, BuildContext context) {
                   )));
       break;
     case 1:
-      // Navigator.push(
-      //     context,
-      //     PageRouteBuilder(
-      //         pageBuilder: (context, animation1, animation2) => ProfilePage(
-      //               title: "Your Profile",
-      //             )));
+       Navigator.push(
+           context,
+           PageRouteBuilder(
+               pageBuilder: (context, animation1, animation2) => MyGamesPage(
+
+                   )));
       break;
     case 2:
       Navigator.push(

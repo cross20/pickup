@@ -85,8 +85,9 @@ class _RootPageState extends State<RootPage> {
         break;
       case AuthStatus.LOGGED_IN://displays splashscreepage(homepage) if logged in
         if (_userId.length > 0 && _userId != null) {
+          
           return new SplashScreenPage(
-            title: "SplashPage",
+            title: "PickUp",
             userId: _userId,
             auth: widget.auth,
             logoutCallback: logoutCallback,
