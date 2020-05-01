@@ -13,6 +13,10 @@ import 'package:geocoder/geocoder.dart';
 import 'package:fluster/fluster.dart';
 import 'package:meta/meta.dart';
 import 'gamedetails.dart';
+// Used for determining what type of platform user is on
+import 'dart:io' show Platform;
+
+
 
 
 // Set of markers that is used by the google Map API to place game locations on map
@@ -31,6 +35,7 @@ class FindGameMap extends StatefulWidget {
 class _FindGameMapState extends State<FindGameMap> {
   GoogleMapController mapController;
 
+  bool isIOS = false;
   // Default that the user does not have location services turned on
   bool locationservices = false;
 
@@ -73,7 +78,51 @@ class _FindGameMapState extends State<FindGameMap> {
   // global device stats.
   void initState() {
     super.initState();
+
+    if(Platform.isIOS) {
+      isIOS = true;
+    }
+
+    
+    // Upon initial start of the map check if the user is on IOS
+    
+ 
+    // if IOS, load the ios pictures
+  if(isIOS) {
+        BitmapDescriptor.fromAssetImage(
+      
+            ImageConfiguration(
+                devicePixelRatio: 2.5),
+            'assets/iosBasketball.png')
+        .then((onValue) {
+      basketball = onValue;
+    });
     BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(
+                devicePixelRatio: 2.5),
+            'assets/iosFootball.png')
+        .then((onValue) {
+      football = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(
+                devicePixelRatio: 2.5),
+            'assets/iosSoccer.png')
+        .then((onValue) {
+      soccer = onValue;
+    });
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(
+                devicePixelRatio: 2.5),
+            'assets/iosBaseball.png')
+        .then((onValue) {
+      baseball = onValue;
+    });
+  }
+  // Android pictures
+  else {
+          BitmapDescriptor.fromAssetImage(
+      
             ImageConfiguration(
                 devicePixelRatio: 2.5),
             'assets/Basketball.png')
@@ -101,6 +150,8 @@ class _FindGameMapState extends State<FindGameMap> {
         .then((onValue) {
       baseball = onValue;
     });
+  }
+    
     // Initialize the current user location on first map build
     _getUserLocation();
   }
