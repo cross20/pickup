@@ -37,7 +37,7 @@ class _FindGameMapState extends State<FindGameMap> {
 
   bool isIOS = false;
   // Default that the user does not have location services turned on
-  bool locationservices = false;
+  bool locationservices = true;
 
   // This is the variable that will store the position
   // where the googlemap camera will go to
@@ -57,18 +57,25 @@ class _FindGameMapState extends State<FindGameMap> {
     _userlocation = null;
     // TODO: Check if user is allowing us to access their location.
 
-    if (locationservices == true) {
       Position position = await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
       setState(() {
         _userlocation = LatLng(position.latitude, position.longitude);
       });
-    } else {
+
+  
+    
+      // GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
+      // if(geolocationStatus == GeolocationStatus.denied || geolocationStatus == GeolocationStatus.disabled) {
+      //   print("Denied");
+      // setState(() {
+      //   _userlocation = LatLng(45.502800, -122.779533);
+      // });
+      // }
+    
       // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
-      setState(() {
-        _userlocation = LatLng(45.502800, -122.779533);
-      });
-    }
+
+  
   }
 
   @override
