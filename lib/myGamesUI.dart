@@ -77,7 +77,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
         stream: gamesSnapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Text('Loading...');
+            return Center(child: CircularProgressIndicator());
           }
           return ListView.builder(
               padding: const EdgeInsets.all(8.0),

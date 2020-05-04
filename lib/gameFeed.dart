@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
@@ -29,12 +31,10 @@ class GameFeedState extends State<GameFeed> {
     super.initState();
     geo = Geoflutterfire();
     GeoFirePoint center = geo.point(latitude: 48.0, longitude: 117.0);
-    stream = radius.switchMap((rad) {
-      print('rad is $rad');
+    stream = radius.switchMap((double rad) {
       var collectionReference = _firestore.collection(dbCol);
-      return geo
-          .collection(collectionRef: collectionReference)
-          .within(center: center, radius: 100, field: 'point', strictMode: true);
+      return geo.collection(collectionRef: collectionReference).within(
+          center: center, radius: 100, field: 'point', strictMode: true);
     });
   }
 
@@ -43,6 +43,12 @@ class GameFeedState extends State<GameFeed> {
     setState(() {
       this._showGameFeed = showFeed;
     });
+  }
+
+  void _onFeedCreated() {
+    setState() {
+      stream.listen((List<DocumentSnapshot> documents) {});
+    }
   }
 
   /// Formats each individual game to appear in the listView.builder.
@@ -78,15 +84,18 @@ class GameFeedState extends State<GameFeed> {
           valueListenable: filter.baseball,
           builder: (BuildContext context, bool value, Widget child) {
             return Expanded(
-                child: /*StreamBuilder(
+                child: StreamBuilder(
               stream: stream,
               builder: (BuildContext context,
                   AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                print(
+                    'data ${snapshot.toString()}.');
                 if (snapshot.hasError) {
                   return new Text('Error: ${snapshot.error}');
                 }
-                if (snapshot.connectionState == ConnectionState.active && snapshot.hasData && snapshot.data.length > 0) {
-                  //print('data ${snapshot.data.toString()}. length ${snapshot.data.length}');
+                if (snapshot.connectionState == ConnectionState.active &&
+                    snapshot.hasData &&
+                    snapshot.data.length > 0) {
                   return ListView.builder(
                     padding: const EdgeInsets.all(8),
                     itemCount: snapshot.data.length,
@@ -97,9 +106,9 @@ class GameFeedState extends State<GameFeed> {
                   return Center(child: CircularProgressIndicator());
                 }
               },
-            )*/
+            )
 
-                StreamBuilder(
+                /*StreamBuilder(
               stream: gamesSnapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -112,7 +121,7 @@ class GameFeedState extends State<GameFeed> {
                         createGameCard(
                             context, snapshot.data.documents[index]));
               },
-            )
+            )*/
                 );
           });
     } else {
