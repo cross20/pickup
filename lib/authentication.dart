@@ -32,10 +32,16 @@ class Auth implements BaseAuth {
   }
 
   Future<String> signUp(String email, String password) async {
+
+    
     AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
+
+      
         
     FirebaseUser user = result.user;
+
+
     print(user.uid);
     return user.uid;
   }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'signup_login.dart';
 import 'authentication.dart';
 import 'splashscreen.dart';
+import 'globals.dart' as globals;
 
 //type of authentication at any given time
 enum AuthStatus {
@@ -41,11 +42,28 @@ class _RootPageState extends State<RootPage> {
     });
   }
 
+  String userId(){
+    String userid;
+    widget.auth.getCurrentUser().then((user) {
+     
+        if (user != null) {
+          globals.userId =  user.uid.toString();
+        }
+       
+      else
+        globals.userId = "Testuser";
+     
+    });
+
+    return userid;
+  }
+
 //this function is trigerred after login form is submitted
   void loginCallback() {
     widget.auth.getCurrentUser().then((user) {
       setState(() {
         _userId = user.uid.toString();
+        
       });
     });
     setState(() {
@@ -85,12 +103,13 @@ class _RootPageState extends State<RootPage> {
         break;
       case AuthStatus.LOGGED_IN://displays splashscreepage(homepage) if logged in
         if (_userId.length > 0 && _userId != null) {
-          
+           globals.userId = _userId; //set global userID to current userid
           return new SplashScreenPage(
             title: "PickUp",
             userId: _userId,
             auth: widget.auth,
             logoutCallback: logoutCallback,
+           
           );
         } else
           return buildWaitingScreen();

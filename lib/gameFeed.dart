@@ -6,6 +6,7 @@ import 'package:pickup_app/globals.dart';
 import 'package:rxdart/rxdart.dart';
 import 'filterPage.dart';
 import 'findGameMap.dart';
+import 'globals.dart' as globals;
 
 Firestore _firestore = Firestore.instance;
 Geoflutterfire geo;
@@ -163,7 +164,8 @@ class GameFeedState extends State<GameFeed> {
                       RaisedButton(
                         onPressed: () => {shouldShowGameFeed(false)},
                         child: Text(
-                          'Map',
+                        'Map',
+                          
                         ),
                       ),
                     ],
