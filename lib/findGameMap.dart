@@ -1,6 +1,3 @@
-///This file is everything in map.dart, just no longer has the Scaffold/Material App Widget
-///file just for the map
-import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -100,28 +97,28 @@ class _FindGameMapState extends State<FindGameMap> {
       
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/iosBasketball.png')
+            'assets/smalliosBasketball.png')
         .then((onValue) {
       basketball = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/iosFootball.png')
+            'assets/smalliosFootball.png')
         .then((onValue) {
       football = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/iosSoccer.png')
+            'assets/smalliosSoccer.png')
         .then((onValue) {
       soccer = onValue;
     });
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
                 devicePixelRatio: 2.5),
-            'assets/iosBaseball.png')
+            'assets/smalliosBaseball.png')
         .then((onValue) {
       baseball = onValue;
     });
@@ -269,10 +266,10 @@ class _FindGameMapState extends State<FindGameMap> {
                                 snap.data.documents
                                     .elementAt(i)
                                     .data['playersneeded']
-                                    .toString() +
+                                    .toString(),
                                 // TODO: Implement players currently in the game once this feature is complete
                                 // by someone else.
-                                '\nPlayers in game: 5',
+                               
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
