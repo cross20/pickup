@@ -267,8 +267,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       },
                       decoration: InputDecoration(
                         labelText: "Date",
-                        helperText: "Helper text",
-                        hintText: "Hint text",
+                        // helperText: "Helper text",
+                        // hintText: "Hint text",
                       ),
                     ),
                     //start time (Android)
