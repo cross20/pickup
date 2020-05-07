@@ -255,14 +255,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       lastDate: DateTime(DateTime.now().year + 1),
                       inputType: InputType.date,
                       format: DateFormat("EEEE, MMMM d, yyyy"),
-                      onChanged: (date) => {
+                      onChanged: (date) {
                         if (date != null)
                           {
                             gameDate = DateTime(
                               date.year,
                               date.month,
                               date.day,
-                            )
+                            );
                           }
                       },
                       decoration: InputDecoration(
@@ -274,7 +274,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                     //start time (Android)
                     FormBuilderDateTimePicker(
                       attribute: "start time",
-                      onChanged: (date) => {
+                      onChanged: (date) {
                         if (date != null)
                           {
                             startGameTime = DateTime(
@@ -283,7 +283,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                                 gameDate.day,
                                 date.hour,
                                 date.minute,
-                                00)
+                                00);
                           }
                       },
                       inputType: InputType.time,
@@ -297,7 +297,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                     //end time (Android)
                     FormBuilderDateTimePicker(
                       attribute: "end time",
-                      onChanged: (date) => {
+                      onChanged: (date) {
                         if (date != null)
                           {
                             endGameTime = DateTime(
@@ -306,7 +306,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                                 gameDate.day,
                                 date.hour,
                                 date.minute,
-                                00)
+                                00);
                           }
                       },
                       inputType: InputType.time,
