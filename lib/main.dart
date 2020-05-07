@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'createGame.dart';
 import 'gameFeed.dart';
 import 'map.dart';
+import 'gamedetails.dart';
 import 'signup_login.dart';
 import 'authroot.dart';
 import 'authentication.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         '/signup':(BuildContext context) => SignupLoginPage(),
         '/gameFeed':(BuildContext context) => GameFeed(),
         '/myGames':(BuildContext context) => MyGamesPage(),
+        '/gamedetails' : (BuildContext context) => GameDetailsPage("Game ID Value"),
       }
     );
   }

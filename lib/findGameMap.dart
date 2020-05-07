@@ -258,7 +258,7 @@ class _FindGameMapState extends State<FindGameMap> {
                         // In the future, the subtitle will pull values from the DB
                         subtitle: Text(
                             formattedgamedate +
-                                '\nFrom ' +
+                                '\n' +
                                 formattedstarttime +
                                 ' to ' +
                                 formattedendtime +
