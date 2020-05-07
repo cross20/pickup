@@ -139,12 +139,12 @@ void initState() {
                     children: <Widget>[
                      
                          ListTile(
-                          leading: Icon(Icons.pin_drop),
+                          leading: Icon(Icons.pin_drop, color: Colors.blue),
                           title: Text(currentgame.address),
                       
                         ),
                       ListTile(
-                         leading: Icon(Icons.calendar_today),
+                         leading: Icon(Icons.calendar_today, color: Colors.blue),
                          title: Text(gamedateformatter.format(
                              currentgame.starttime.toDate().toLocal()))),
 
@@ -153,13 +153,13 @@ void initState() {
                       Row( children: <Widget> [
                              Expanded(
                                                             child: ListTile(
-                       leading: Icon(Icons.directions_run),
+                       leading: Icon(Icons.directions_run, color: Colors.blue),
                        title: Text(currentgame.sport),
                       ),
                              ),
                        Expanded(
                                                 child: ListTile(
-                         leading: Icon(Icons.people),
+                         leading: Icon(Icons.people, color: Colors.blue),
                          title: Text(currentgame.playersneeded.toString()),
                       ),
                        ),
@@ -170,14 +170,14 @@ void initState() {
                         children: <Widget>[
   Expanded(
       child: ListTile(
-                         leading: Icon(Icons.timer),
+                         leading: Icon(Icons.timer, color: Colors.blue),
                          title: Text(starttimeformatter
                              .format(currentgame.starttime.toDate().toLocal())),
                         ),
   ),
                        Expanded(
                                                 child: ListTile(
-                         leading: Icon(Icons.timer_off),
+                         leading: Icon(Icons.timer_off, color: Colors.blue),
                          title: Text(endtimeformatter
                              .format(currentgame.endtime.toDate().toLocal())),
                       ),
@@ -186,11 +186,11 @@ void initState() {
                       ),
                      
                       ListTile(
-                      leading: Icon(Icons.person),
+                      leading: Icon(Icons.person, color: Colors.blue),
                       title: Text(currentgame.userid),
                       ),
                        ListTile(
-                         leading: Icon(Icons.event_note),
+                         leading: Icon(Icons.event_note, color: Colors.blue),
                          title: Text(currentgame.note),
                        ),
                       
@@ -240,7 +240,9 @@ void initState() {
                     
                     
                     
-                      RaisedButton(onPressed: () {}, child: Text("Join Game"))
+                      RaisedButton(onPressed: () {}, textColor: Colors.white,
+                      color: Colors.blue,
+                        child: Text("Join Game"))
                     ],
                   ),
                 ),
