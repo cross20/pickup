@@ -1,3 +1,4 @@
+/////This is the game creation page
 import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,11 @@ import 'appUI.dart';
 import 'authentication.dart';
 import 'authroot.dart';
 import 'splashscreen.dart';
+import 'package:dio/dio.dart';
+import 'appUI.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 
 // google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -37,23 +43,22 @@ class CreateGamePage extends StatefulWidget {
 class _CreateGamePageState extends State<CreateGamePage> {
   String userId;
   _CreateGamePageState({this.userId}) {}
+  //Global Key for the form widgets
+  GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
 
   // This is the Google Maps Place API
   GoogleMapsPlaces _places =
       GoogleMapsPlaces(apiKey: "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0");
   String googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
-  var address;
+
   //for the session ID token
   var uuid = new Uuid();
   String _sessionToken;
   List<String> _placesList = [];
   GeoFirePoint _location;
 
-  // init value of dropdownmenu
-  String dropdownsport = "Basketball";
-
-  ///init value of sport
-  String dropdownpub = "Public"; //initial value of priv or pub match
+  //String for the selected sport
+  String selectedSport = " ";
 
   ///controllers for listening to address, msg, sport, pub/priv input
   final myControllerAddr = TextEditingController(); //for the entered address
@@ -67,8 +72,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
   //init value of user inputted message
   String msg = " ";
 
-  //init # of players
-  int _currentNumPlay = 3;
+  //Number of players wanted, init to 2
+  int _currentNumPlay = 2;
+
+  // List to store the 5 results from address search
+  List<String> _displayedResults = [];
+
+  //bool for pub vs priv match
+  bool private = false;
 
   //init userId
 
@@ -76,69 +87,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
   var gameDate = DateTime.now();
   var startGameTime = DateTime.now();
   var endGameTime = DateTime.now();
-
-  /// https://www.youtube.com/watch?v=iX3vCtcHwPE timePicker from that video
-  TimeOfDay _timeStart = TimeOfDay.now();
-  TimeOfDay pickedStart;
-
-  /// this method is for the creation of the timePicker to select the start time of the game
-  Future<Null> selectstartTime(BuildContext context) async {
-    pickedStart = await showTimePicker(
-      context: context,
-      initialTime: _timeStart,
-    );
-
-    setState(() {
-      _timeStart = pickedStart;
-      startGameTime = DateTime(startGameTime.year, startGameTime.month,
-          startGameTime.day, pickedStart.hour, pickedStart.minute, 00);
-    });
-  }
-
-  /// this method is for the timePicker to select the ending time of the game
-  TimeOfDay _timeEnd = TimeOfDay.now();
-  TimeOfDay pickedEnd;
-  Future<Null> selectendTime(BuildContext context) async {
-    pickedEnd = await showTimePicker(
-      context: context,
-      initialTime: _timeEnd,
-    );
-
-    setState(() {
-      _timeEnd = pickedEnd;
-      endGameTime = DateTime(endGameTime.year, endGameTime.month,
-          endGameTime.day, pickedEnd.hour, pickedEnd.minute, 00);
-    });
-  }
-
-  /// this function is called when submit button is hit, this is where values are updated and casted to proper data type
-  /// to be sent to the server
-  void _updateData() {
-    print(userId);
-
-    ///to pass in the timestamp of both startGameTime and endGameTime,
-    Timestamp _starttime = Timestamp.fromDate(startGameTime);
-    Timestamp _endtime = Timestamp.fromDate(endGameTime);
-
-    ///set bool for public/private match
-    bool priv = false;
-    if (dropdownpub == "Public")
-      priv = false;
-    else
-      priv = true;
-
-    //need to reset session token after submit button is selected
-    _sessionToken = null;
-
-    setState(() {
-      addr = myControllerAddr.text;
-      msg = myControlMsg.text;
-
-      // A game will be pushed to the database everytime the "submit" button is clicked
-      creategame(_endtime, _location, msg, _currentNumPlay, priv, dropdownsport,
-          _starttime, userId);
-    });
-  }
 
   //When this page is first created, the _onSearchChanged is added to the
   // Address controller so that _onSearch can be called every time
@@ -148,38 +96,15 @@ class _CreateGamePageState extends State<CreateGamePage> {
   void initState() {
     super.initState();
     myControllerAddr.addListener(_onSearchChanged);
-    _placesList = ["This", "is", "where", "address", "will be"];
-  }
-
-  // this is so that all controllers are done when this route (page) is exited
-  @override
-  void dispose() {
-    myControllerAddr.removeListener(_onSearchChanged);
-    myControllerAddr.dispose();
-    myControlMsg.dispose();
-    myControlpub.dispose();
-    myControlSport.dispose();
-    super.dispose();
-  }
-
-  //_onSearchChanged is so that a new sessionToken can be assigned to the new search
-  // this way the company is not charged for each individual API search, but rather
-  // charged for every session
-  _onSearchChanged() {
-    if (_sessionToken == null) {
-      setState(() {
-        _sessionToken = uuid.v4();
-      });
-    }
   }
 
   // A method for a custom Google Places Autocomplete request
   void displayPrediction(String input) async {
     String baseURL =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json';
-    String type = 'address';
 
     ///what type of autocomplete do we want?
+    String type = 'address';
 
     String request =
         '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
@@ -190,26 +115,21 @@ class _CreateGamePageState extends State<CreateGamePage> {
     // get the body of the response message
     final predictions = response.data['predictions'];
 
-    // List for the results, and the below for loop is so each of the
-    // five description elements (in this case addresses) of the predictions array
-    // can be gathered and be displayed
-    List<String> _displayedResults = [];
+    //clear list for new elements
+    _displayedResults.clear();
 
+    // add new elements
     for (var i = 0; i < predictions.length; i++) {
       String name = predictions[i]['description'];
       _displayedResults.add(name);
     }
-
-    setState(() {
-      //Set the _placesList to the returned list of addresses
-      _placesList = _displayedResults;
-    });
   }
 
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
       GeoFirePoint _location,
+      String _addr,
       String _note,
       int _playersneeded,
       bool _private,
@@ -244,13 +164,23 @@ class _CreateGamePageState extends State<CreateGamePage> {
             minWidth: 50.0),
         alignment: Alignment.center);
   }
+  //_onSearchChanged is so that a new sessionToken can be assigned to the new search
+  // this way the company is not charged for each individual API search, but rather
+  // charged for every session
+  _onSearchChanged() {
+    if (_sessionToken == null) {
+      setState(() {
+        _sessionToken = uuid.v4();
+      });
+    }
+  }
 
   //This method is for changing the selected address into coordinates.
   // First it builds the URL needed to changed the address
   // Then assigns the response message body to the results variable
   // Then breaks down the body to the coordinates we need by splitting and deleting
   //    many words and symbols
-  void getCoordinates(String placesAddr) async {
+  Future<void> getCoordinates(String placesAddr) async {
     String addrURL = placesAddr.replaceAll(" ", "+");
     String requestURL =
         "https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
@@ -276,76 +206,287 @@ class _CreateGamePageState extends State<CreateGamePage> {
     _location = GeoFirePoint(latitude, longitude);
   }
 
-  //For the list tiles of the list view for the google places search
-  Widget buildListCard(BuildContext context, int index) {
-    return Card(
-        child: ListTile(
-      title: Text(_placesList[index]),
-      onTap: () {
-        //function to get the coordinates from selected address
-        getCoordinates(_placesList[index]);
-        setState(() {
-          myControllerAddr.text = _placesList[
-              index]; //This way the textfield has the selected address showing
-        });
-      },
-    ));
+  /// this function is called when submit button is hit, this is where values are updated and casted to proper data type
+  /// to be sent to the server
+  void _updateData() async {
+    ///to pass in the timestamp of both startGameTime and endGameTime,
+    Timestamp _starttime = Timestamp.fromDate(startGameTime);
+    Timestamp _endtime = Timestamp.fromDate(endGameTime);
+
+    //function to get the coordinates from selected address
+    await getCoordinates(myControllerAddr.text);
+
+    //need to reset session token after submit button is selected
+    _sessionToken = null;
+
+      // A game will be pushed to the database everytime the "submit" button is clicked
+      creategame(_endtime, _location, myControllerAddr.text, myControlMsg.text, _currentNumPlay,
+          private, selectedSport, _starttime, userId);
   }
+
+  // // Function to create a new game and add to the firestore database.
+  // void creategame(Timestamp _endtime, GeoPoint _location, String _addr, String _note,
+  //     int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
+  //   Game game = new Game(
+  //     address: _addr,
+  //     endtime: _endtime,
+  //     location: _location,
+  //     note: _note,
+  //     playersneeded: _playersneeded,
+  //     private: _private,
+  //     sport: _sport,
+  //     starttime: _starttime,
+  //   );
+  //   instance.addgame(game.toMap());
+  // }
 
   ///For the selection of bottom nav items
   void _onBotNavTap(int index) {
     newRoute(index, context);
   }
 
-  ///all the defined UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            ///address row
-            Row(
-              children: <Widget>[
-                text("Address:", 100.0),
-                Container(
-                  child: TextField(
-                    decoration: InputDecoration(hintText: 'Enter Address Here'),
-                    controller: myControllerAddr,
-                    onChanged: (text) {
-                      displayPrediction(text);
-                    },
-                  ),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 300.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
+      appBar: AppBar(
+        title: Text("Create Game Page"),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              FormBuilder(
+                // context,
+                key: _fbKey,
+                autovalidate: false,
+                initialValue: {
+                  'movie_rating': 5,
+                },
+                readOnly: false,
+                child: Column(
+                  children: <Widget>[
+                    // Address input
+                    FormBuilderTypeAhead(
+                      decoration: InputDecoration(
+                        labelText: "Address",
+                      ),
+                      attribute: 'address',
+                      onChanged: (text) {
+                        displayPrediction(text);
+                      },
+                      itemBuilder: (context, address) {
+                        return ListTile(
+                          title: Text(address),
+                        );
+                      },
+                      controller: myControllerAddr,
+                      initialValue: myControllerAddr.text,
+                      suggestionsCallback: (address) {
+                        if (address.length != 0) {
+                          return _displayedResults.getRange(0, 3);
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                    //Date picker (Android)
+                    FormBuilderDateTimePicker(
+                      attribute: "date",
+                      firstDate: DateTime(DateTime.now().year,
+                          DateTime.now().month, DateTime.now().day, 00, 00),
+                      lastDate: DateTime(DateTime.now().year + 1),
+                      inputType: InputType.date,
+                      format: DateFormat("EEEE, MMMM d, yyyy"),
+                      onChanged: (date) {
+                        if (date != null)
+                          {
+                            gameDate = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                            );
+                          }
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Date",
+                        // helperText: "Helper text",
+                        // hintText: "Hint text",
+                      ),
+                    ),
+                    //start time (Android)
+                    FormBuilderDateTimePicker(
+                      attribute: "start time",
+                      onChanged: (date) {
+                        if (date != null)
+                          {
+                            startGameTime = DateTime(
+                                gameDate.year,
+                                gameDate.month,
+                                gameDate.day,
+                                date.hour,
+                                date.minute,
+                                00);
+                          }
+                      },
+                      inputType: InputType.time,
+                      format: DateFormat("h:mma"),
+                      decoration: InputDecoration(
+                        labelText: "Start Time",
+                      ),
+                      validator: (val) => null,
+                      initialTime: TimeOfDay(hour: 12, minute: 0),
+                    ),
+                    //end time (Android)
+                    FormBuilderDateTimePicker(
+                      attribute: "end time",
+                      onChanged: (date) {
+                        if (date != null)
+                          {
+                            endGameTime = DateTime(
+                                gameDate.year,
+                                gameDate.month,
+                                gameDate.day,
+                                date.hour,
+                                date.minute,
+                                00);
+                          }
+                      },
+                      inputType: InputType.time,
+                      format: DateFormat("h:mma"),
+                      decoration: InputDecoration(
+                        labelText: "End Time",
+                      ),
+                      validator: (val) => null,
+                      initialTime: TimeOfDay(hour: 12, minute: 0),
+                    ),
+                    //private match checkbox
+                    FormBuilderCheckbox(
+                      attribute: 'priv_or_pub',
+                      initialValue: false,
+                      onChanged: (checked) => {private = checked},
+                      label: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Private Match?',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    //Sport picker
+                    FormBuilderRadio(
+                      decoration: InputDecoration(
+                          labelText: 'What sport will you be playing?'),
+                      attribute: "sport_pick",
+                      leadingInput: true,
+                      onChanged: (sport) {
+                        selectedSport = sport;
+                      },
+                      validators: [FormBuilderValidators.required()],
+                      options: ["Basketball", "Soccer", "Football", "Baseball"]
+                          .map((lang) => FormBuilderFieldOption(
+                                value: lang,
+                                child: Text('$lang'),
+                              ))
+                          .toList(growable: false),
+                    ),
+                    FormBuilderSlider(
+                      attribute: "num_of_players",
+                      onChanged: (number) {
+                        double play = number;
+                        _currentNumPlay = play.toInt();
+                      },
+                      min: 2,
+                      max: 24,
+                      initialValue: 2,
+                      divisions: 22,
+                      activeColor: Colors.red,
+                      inactiveColor: Colors.pink[100],
+                      numberFormat: NumberFormat("#0", "en_US"),
+                      decoration: InputDecoration(
+                        labelText: "Number of players wanted",
+                        border: InputBorder.none,
+                      ),
+                    ),
+                    FormBuilderTextField(
+                      attribute: "message",
+                      controller: myControlMsg,
+                      maxLines: 1,
+                      decoration: InputDecoration(
+                          labelText: "Any special notes or criteria?"),
+                      textCapitalization: TextCapitalization.sentences,
+                      keyboardType: TextInputType.text,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            Row(
-              ///To create the List of Addresses from Google Places
-              children: <Widget>[
-                Expanded(
-                  child: SizedBox(
-                    height: 100.0,
-                    child: ListView.builder(
-                      itemCount: _placesList.length,
-                      itemBuilder: (BuildContext context, int index) =>
-                          buildListCard(context, index),
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: MaterialButton(
+                      color: Theme.of(context).accentColor,
+                      child: Text(
+                        "Submit",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        _updateData();
+                        _fbKey.currentState.reset();
+                      },
                     ),
                   ),
-                )
-              ],
-            ), 
-            ///time and date row
-            Row(
-              children: <Widget>[
-                text("Time/Date:", 100.0),
-                Container(
-                  child: FlatButton(
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Expanded(
+                    child: MaterialButton(
+                      color: Theme.of(context).accentColor,
+                      child: Text(
+                        "Reset",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          myControllerAddr.clear();
+                        });
+                        _fbKey.currentState.reset();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),// This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+///Date Picker for iOS
+/* FormBuilderCustomField(
+                      attribute: "date_ios",
+                      validators: [
+                        FormBuilderValidators.required(),
+                      ],
+                      formField: FormField(
+                        enabled: true,
+                        builder: (FormFieldState<dynamic> field) {
+                          return InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: "Date (iOS)",
+                              contentPadding:
+                                  EdgeInsets.only(top: 10.0, bottom: 0.0),
+                              border: InputBorder.none,
+                              errorText: field.errorText,
+                            ),
+                            child: Container(
+                              height: 100,
+                              child: FlatButton(
 
                       ///date button
                       onPressed: () {
@@ -353,7 +494,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
                             showTitleActions: true,
                             minTime: DateTime(DateTime.now().year,
                                 DateTime.now().month, DateTime.now().day),
-                            maxTime: DateTime(2020, 12, 31), onChanged: (date) {
+                            maxTime: DateTime(DateTime.now().year, 12, 31), 
+                            onChanged: (date) {
                           print('change $date');
                           gameDate = date;
                           startGameTime = DateTime(
@@ -385,125 +527,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       minWidth: 50.0),
                   alignment: Alignment.center,
                 ),
-                Container(
-                  child: FlatButton(
-                      ////start time button
-                      onPressed: () {
-                        selectstartTime(context);
-                      },
-                      child: Text(
-                        'start time',
-                        style: TextStyle(color: Colors.blue),
-                      )),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 100.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                  alignment: Alignment.center,
-                ),
-                Container(
-                  child: FlatButton(
-                      ////end time button
-                      onPressed: () {
-                        selectendTime(context);
-                      },
-                      child: Text(
-                        'end time',
-                        style: TextStyle(color: Colors.blue),
-                      )),
-                  constraints: BoxConstraints(
-                      maxHeight: 50.0,
-                      maxWidth: 100.0,
-                      minHeight: 50.0,
-                      minWidth: 50.0),
-                  alignment: Alignment.center,
-                )
-              ],
-            ),
-
-            /// sport row
-            Row(children: <Widget>[
-              text("Sport:", 100.0),
-              Container(
-                child: DropdownButton<String>(
-                  value: dropdownsport,
-                  iconSize: 20,
-                  onChanged: (String newValue) {
-                    setState(() {
-                      dropdownsport = newValue;
-                    });
-                  },
-                  items: <String>[
-                    'Basketball',
-                    'Soccer',
-                    'Football',
-                    'Baseball'
-                  ].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-                alignment: Alignment.centerRight,
-              )
-            ]),
-            // private or public match row
-            Row(
-              children: <Widget>[
-                text("Private or Public Match?", 200.0),
-                Container(
-                  alignment: Alignment.center,
-                  child: DropdownButton<String>(
-                    value: dropdownpub,
-                    iconSize: 20,
-                    onChanged: (String newValue) {
-                      setState(() {
-                        dropdownpub = newValue;
-                      });
-                    },
-                    items: <String>['Private', 'Public']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                )
-              ],
-            ),
-
-            ///# of players row
-            Row(
-              children: <Widget>[
-                text("# of players: ", 100.0),
-                Container(
-                    alignment: Alignment.center,
-                    child: new NumberPicker.integer(
-                        initialValue: _currentNumPlay,
-                        minValue: 3,
-                        maxValue: 25,
-                        onChanged: (newValue) =>
-                            setState(() => _currentNumPlay = newValue)))
-              ],
-            ),
-
-            ///add any addition messages or notes that players should know row
-            TextField(
-              decoration: InputDecoration(hintText: 'Anything else to note:'),
-              controller: myControlMsg,
-            ),
-          ],
-        ),
-      ),
-      // the submit button
-      floatingActionButton: FloatingActionButton(
-        onPressed: _updateData,
-        tooltip: 'Increment',
-        child: Text('Submit'),
-      ),
-    );
-  }
-}
+                          );
+                        },
+                      ),
+                    ),*/
