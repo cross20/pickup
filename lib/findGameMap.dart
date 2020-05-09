@@ -204,8 +204,8 @@ class _FindGameMapState extends State<FindGameMap> {
           markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
           // Get latitude and longitude from the database
           position: LatLng(
-              snap.data.documents.elementAt(i).data['point']['geopoint'].latitude,
-              snap.data.documents.elementAt(i).data['point']['geopoint'].longitude),
+              snap.data.documents.elementAt(i).data['location'].latitude,
+              snap.data.documents.elementAt(i).data['location'].longitude),
           zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
