@@ -2,14 +2,10 @@ import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:dio/dio.dart';
 import 'appUI.dart';
-import 'authentication.dart';
-import 'authroot.dart';
-import 'splashscreen.dart';
 
 // google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -42,12 +38,12 @@ class _CreateGamePageState extends State<CreateGamePage> {
   GoogleMapsPlaces _places =
       GoogleMapsPlaces(apiKey: "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0");
   String googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
+  GeoPoint _location;
   var address;
   //for the session ID token
   var uuid = new Uuid();
   String _sessionToken;
   List<String> _placesList = [];
-  GeoFirePoint _location;
 
   // init value of dropdownmenu
   String dropdownsport = "Basketball";
@@ -209,7 +205,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
-      GeoFirePoint _location,
+      GeoPoint _location,
       String _note,
       int _playersneeded,
       bool _private,
@@ -218,8 +214,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
       String _userId) {
     Game game = new Game(
         endtime: _endtime,
-        geoLocation: _location,
-        location: _location.geoPoint,
+        location: _location,
         note: _note,
         playersneeded: _playersneeded,
         private: _private,
@@ -273,7 +268,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     var latitude = double.parse(res[0]);
     var longitude = double.parse(res[1]);
 
-    _location = GeoFirePoint(latitude, longitude);
+    _location = GeoPoint(latitude, longitude);
   }
 
   //For the list tiles of the list view for the google places search

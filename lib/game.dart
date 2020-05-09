@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 
 // Data Model Class to store game information and allow for both serialization and deserialization
 // of firebase data.
@@ -8,7 +7,6 @@ class Game {
   String userid;
   String address;
   Timestamp endtime;
-  GeoFirePoint geoLocation;
   GeoPoint location;
   String note;
   int playersneeded;
@@ -19,8 +17,6 @@ class Game {
 
   toString() {
     return this.endtime.toString() +
-        ', ' +
-        this.geoLocation.toString() +
         ', ' +
         this.location.toString() +
         ', ' +
@@ -43,7 +39,6 @@ class Game {
       this.userid,
       this.address,
       this.endtime,
-      this.geoLocation,
       this.location,
       this.note,
       this.playersneeded,
@@ -62,7 +57,6 @@ class Game {
     data = data ?? {};
     return Game(
       endtime: data['endtime'] ?? '',
-      geoLocation: data['point'] ?? '',
       location: data['location'] ?? '',
       note: data['note'] ?? '',
       playersneeded: data['playersneeded'] ?? 0,
@@ -87,7 +81,6 @@ class Game {
     return Game(
       id: doc.documentID,
       endtime: data['endtime'] ?? '',
-      geoLocation: data['point'] ?? '',
       location: data['location'] ?? '',
       note: data['note'] ?? '',
       playersneeded: data['playersneeded'] ?? 0,
@@ -104,7 +97,6 @@ class Game {
   /// https://flutter.institute/firebase-firestore/
   Map<String, dynamic> toMap() => {
         'endtime': this.endtime,
-        'point': this.geoLocation.data,
         'location': this.location,
         'note': this.note,
         'playersneeded': this.playersneeded,

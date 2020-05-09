@@ -149,8 +149,8 @@ class _FindGameMapState extends State<FindGameMap> {
           markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
           // Get latitude and longitude from the database
           position: LatLng(
-              snap.data.documents.elementAt(i).data['point']['geopoint'].latitude,
-              snap.data.documents.elementAt(i).data['point']['geopoint'].longitude),
+              snap.data.documents.elementAt(i).data['location'].latitude,
+              snap.data.documents.elementAt(i).data['location'].longitude),
           zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
@@ -338,14 +338,17 @@ class _FindGameMapState extends State<FindGameMap> {
               // If the initial position is null, return a container saying that we are loading the map.
               home: _userlocation == null
                   ? Container(
-                      child: Center(
+                      child: CircularProgressIndicator(),
+                      
+                      
+                      /*Center(
                         child: Text(
                           'loading map..',
                           style: TextStyle(
                               fontFamily: 'Avenir-Medium',
                               color: Colors.grey[400]),
                         ),
-                      ),
+                      ),*/
                     )
                   // Once the initial position is not null, create the google map.
                   : GoogleMap(

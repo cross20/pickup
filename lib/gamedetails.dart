@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'appUI.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'game.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:async';
 import 'globals.dart';
 
 class GameDetailsPage extends StatefulWidget {
@@ -32,32 +30,29 @@ class GameDetailsPage extends StatefulWidget {
 }
 
 class _GameDetailsPageState extends State<GameDetailsPage> {
- 
-
-void _getUserLocation() async {
-    DocumentSnapshot query = await Firestore.instance.collection(dbCol).document(widget.gameid).get();
-      // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
-      setState(() {
-         _center = LatLng(query.data['location'].latitude, query.data['location'].longitude);
-      });
-    }
-
+  void _getUserLocation() async {
+    DocumentSnapshot query = await Firestore.instance
+        .collection(dbCol)
+        .document(widget.gameid)
+        .get();
+    // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
+    setState(() {
+      _center = LatLng(
+          query.data['location'].latitude, query.data['location'].longitude);
+    });
+  }
 
   Game currentgame;
 
   GoogleMapController _controller;
 
+  static LatLng _center;
 
-  static  LatLng _center;
-
-void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
   }
 
   Set<Marker> markerlist = new Set();
-
-  
-
 
   var gamedateformatter = new DateFormat('yMMMMEEEEd');
 
@@ -66,15 +61,11 @@ void _onMapCreated(GoogleMapController controller) {
   var endtimeformatter = new DateFormat("jm");
 
   @override
-void initState() {
+  void initState() {
     super.initState();
     // Initialize the current user location on first map build
     _getUserLocation();
-
-
   }
-
-   
 
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
@@ -105,13 +96,11 @@ void initState() {
                 sport: snap.data['sport'],
                 starttime: snap.data['starttime']);
 
-                markerlist.add(new Marker(
-                  markerId: MarkerId(widget.gameid),
-                  position: LatLng(
-                    currentgame.location.latitude,
-                    currentgame.location.longitude
-                  ),
-                ));
+            markerlist.add(new Marker(
+              markerId: MarkerId(widget.gameid),
+              position: LatLng(currentgame.location.latitude,
+                  currentgame.location.longitude),
+            ));
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
@@ -132,114 +121,109 @@ void initState() {
               home: Scaffold(
                 appBar: AppBar(
                   title: Text("Game Details"),
+                  leading: IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.of(context).pop()),
                 ),
                 body: Card(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                     
-                         ListTile(
-                          leading: Icon(Icons.pin_drop),
-                          title: Text(currentgame.address),
-                      
-                        ),
                       ListTile(
-                         leading: Icon(Icons.calendar_today),
-                         title: Text(gamedateformatter.format(
-                             currentgame.starttime.toDate().toLocal()))),
+                        leading: Icon(Icons.pin_drop),
+                        title: Text(currentgame.address),
+                      ),
+                      ListTile(
+                          leading: Icon(Icons.calendar_today),
+                          title: Text(gamedateformatter.format(
+                              currentgame.starttime.toDate().toLocal()))),
 
+                      Row(children: <Widget>[
+                        Expanded(
+                          child: ListTile(
+                            leading: Icon(Icons.directions_run),
+                            title: Text(currentgame.sport),
+                          ),
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            leading: Icon(Icons.people),
+                            title: Text(currentgame.playersneeded.toString()),
+                          ),
+                        ),
+                      ]),
 
-                     
-                      Row( children: <Widget> [
-                             Expanded(
-                                                            child: ListTile(
-                       leading: Icon(Icons.directions_run),
-                       title: Text(currentgame.sport),
-                      ),
-                             ),
-                       Expanded(
-                                                child: ListTile(
-                         leading: Icon(Icons.people),
-                         title: Text(currentgame.playersneeded.toString()),
-                      ),
-                       ),
-                      ]
-                      ),
-                       
                       Row(
                         children: <Widget>[
-  Expanded(
-      child: ListTile(
-                         leading: Icon(Icons.timer),
-                         title: Text(starttimeformatter
-                             .format(currentgame.starttime.toDate().toLocal())),
-                        ),
-  ),
-                       Expanded(
-                                                child: ListTile(
-                         leading: Icon(Icons.timer_off),
-                         title: Text(endtimeformatter
-                             .format(currentgame.endtime.toDate().toLocal())),
-                      ),
-                       ),
+                          Expanded(
+                            child: ListTile(
+                              leading: Icon(Icons.timer),
+                              title: Text(starttimeformatter.format(
+                                  currentgame.starttime.toDate().toLocal())),
+                            ),
+                          ),
+                          Expanded(
+                            child: ListTile(
+                              leading: Icon(Icons.timer_off),
+                              title: Text(endtimeformatter.format(
+                                  currentgame.endtime.toDate().toLocal())),
+                            ),
+                          ),
                         ],
                       ),
-                     
-                      ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text(currentgame.userid),
-                      ),
-                       ListTile(
-                         leading: Icon(Icons.event_note),
-                         title: Text(currentgame.note),
-                       ),
-                      
 
-                      _center == null ? Container(
-                      child: Center(
-                        child: Text(
-                          'loading map..',
-                          style: TextStyle(
-                              fontFamily: 'Avenir-Medium',
-                              color: Colors.grey[400]),
-                        ),
+                      ListTile(
+                        leading: Icon(Icons.person),
+                        title: Text(currentgame.userid),
                       ),
-                    )  : Expanded(
-                        flex: 2,
-                        child: GoogleMap(
-                          onMapCreated: _onMapCreated,
-                          initialCameraPosition: CameraPosition(
-                        target: _center,
-                        zoom: 15,
+                      ListTile(
+                        leading: Icon(Icons.event_note),
+                        title: Text(currentgame.note),
                       ),
-                     markers: markerlist,
-                      )
-                      ),
-                     
-                  //    home: _userlocation == null
-                  // ? Container(
-                  //     child: Center(
-                  //       child: Text(
-                  //         'loading map..',
-                  //         style: TextStyle(
-                  //             fontFamily: 'Avenir-Medium',
-                  //             color: Colors.grey[400]),
-                  //       ),
-                  //     ),
-                  //   )
-                  // // Once the initial position is not null, create the google map.
-                  // : GoogleMap(
-                  //     onMapCreated: _onMapCreated,
-                  //     initialCameraPosition: CameraPosition(
-                  //       target: _userlocation,
-                  //       zoom: 11.0,
-                  //     ),
-                  //     markers: markerlist,
-                  //   ),
-                     
-                    
-                    
-                    
+
+                      _center == null
+                          ? Container(
+                              child: Center(
+                                child: Text(
+                                  'loading map..',
+                                  style: TextStyle(
+                                      fontFamily: 'Avenir-Medium',
+                                      color: Colors.grey[400]),
+                                ),
+                              ),
+                            )
+                          : Expanded(
+                              flex: 2,
+                              child: GoogleMap(
+                                onMapCreated: _onMapCreated,
+                                initialCameraPosition: CameraPosition(
+                                  target: _center,
+                                  zoom: 15,
+                                ),
+                                markers: markerlist,
+                              )),
+
+                      //    home: _userlocation == null
+                      // ? Container(
+                      //     child: Center(
+                      //       child: Text(
+                      //         'loading map..',
+                      //         style: TextStyle(
+                      //             fontFamily: 'Avenir-Medium',
+                      //             color: Colors.grey[400]),
+                      //       ),
+                      //     ),
+                      //   )
+                      // // Once the initial position is not null, create the google map.
+                      // : GoogleMap(
+                      //     onMapCreated: _onMapCreated,
+                      //     initialCameraPosition: CameraPosition(
+                      //       target: _userlocation,
+                      //       zoom: 11.0,
+                      //     ),
+                      //     markers: markerlist,
+                      //   ),
+
                       RaisedButton(onPressed: () {}, child: Text("Join Game"))
                     ],
                   ),
