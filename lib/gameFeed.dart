@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pickup_app/appUI.dart';
 import 'package:pickup_app/gamedetails.dart';
 import 'package:pickup_app/globals.dart';
 import 'package:intl/intl.dart';
 import 'filterPage.dart';
 import 'findGameMap.dart';
+import 'locationPage.dart';
 import 'game.dart';
 
 class GameFeed extends StatefulWidget {
@@ -44,7 +44,7 @@ class GameFeedState extends State<GameFeed> {
           builder: (BuildContext context, bool value, Widget child) {
             return Expanded(
                 child: StreamBuilder(
-              stream: gamesSnapshots(),
+              stream: Firestore.instance.collection(dbCol).snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const CircularProgressIndicator();
@@ -70,17 +70,9 @@ class GameFeedState extends State<GameFeed> {
     }
   }
 
-  /// This is to determine the new Route that must be selected
-  /// to navigate to depending on which bottom nav button is selected
-  /// newRoute() is defined in appUI.dart file
-  void _onBotNavTap(int index) {
-    newRoute(index, context);
-  }
-
   // The main body for the game feed. Uses a column to manage multiple widgets in the body.
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(automaticallyImplyLeading: false),
       body: Column(
         children: <Widget>[
           Container(
@@ -89,8 +81,7 @@ class GameFeedState extends State<GameFeed> {
               // Filter by location (current or specified).
               children: <Widget>[
                 FlatButton(
-                  onPressed:
-                      null, // TODO: Display a search bar and keyboard to search for a location.
+                  onPressed: () => Navigator.of(context).push(_createRoute(LocationPage())),
                   child: Icon(Icons.edit_location),
                 ),
                 // Choose how to view games. Either in list or map form.
@@ -195,6 +186,8 @@ List<Game> getFilteredGames(List<DocumentSnapshot> list) {
 /// Calculates the distance between two [GeoPoint] objects using the standard distance
 /// formula.
 double distanceBetweenPoints(GeoPoint a, GeoPoint b) {
+  // TODO: Create a better distance caluclator. This barely accurte and doesn't return a useful number.
+  // A more useful number would be one of miles or kilometers.
   return sqrt((b.latitude - a.latitude) * (b.latitude - a.latitude) +
       (b.longitude - a.longitude) * (b.longitude - a.longitude));
 }
@@ -223,56 +216,4 @@ Widget getGameCard(BuildContext context, Game g) {
       },
     ),
   );
-}
-
-/// Retrieves the games from the database.
-Stream<QuerySnapshot> gamesSnapshots() {
-  CollectionReference col = Firestore.instance.collection(dbCol);
-
-  return col.snapshots();
-}
-
-/// Formats DateTime objects for games. Returns a string which describes a game's current status:
-/// finished, in progress, or starting soon.
-String _prettyDate(DateTime startTime, DateTime endTime) {
-  Duration zero = Duration(seconds: 0);
-  Duration thirtyMinutes = Duration(minutes: 30);
-  Duration oneHour = Duration(hours: 1);
-  Duration oneDay = Duration(days: 1);
-
-  Duration timeUntilStart = startTime.difference(DateTime.now());
-  Duration timeUntilEnd = endTime.difference(DateTime.now());
-
-  // If the game hasn't started.
-  if (timeUntilStart > zero) {
-    if (timeUntilStart < oneHour) {
-      Duration minutes = Duration(minutes: timeUntilStart.inMinutes);
-      return 'Starting in ${minutes.inMinutes} minutes.';
-    } else if (timeUntilStart < oneDay) {
-      Duration hours = Duration(hours: timeUntilStart.inHours);
-      Duration minutes = timeUntilStart - hours;
-      return 'Starting in ${hours.inHours} hours and ${minutes.inMinutes} minutes.';
-    } else {
-      return 'Starting in ${timeUntilStart.inDays} days.';
-    }
-  }
-
-  // If the game hasn't finished.
-  else if (timeUntilEnd > zero) {
-    if (timeUntilEnd <= thirtyMinutes) {
-      return 'Ending soon';
-    } else if (timeUntilEnd < oneHour) {
-      Duration minutes = Duration(minutes: timeUntilEnd.inMinutes);
-      return 'Ending in ${minutes.inMinutes} minutes.';
-    } else {
-      Duration hours = Duration(hours: timeUntilEnd.inHours);
-      Duration minutes = timeUntilEnd - hours;
-      return 'Ending in ${hours.inHours} hours and ${minutes.inMinutes} minutes.';
-    }
-  }
-
-  // If the game has finished.
-  else {
-    return 'Game has finished.';
-  }
 }
