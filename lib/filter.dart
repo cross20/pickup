@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 /// Manages which data from the database should be presented to the user.
@@ -21,12 +22,15 @@ class Filter {
   /// Set the [value] property to `true` to include all games of type [soccer].
   ValueNotifier<bool> soccer;
 
+  ValueNotifier<GeoPoint> location;
+
   /// Default constructor for [Filter] where all values are `true` by default.
   Filter() {
     baseball = ValueNotifier<bool>(true);
     basketball = ValueNotifier<bool>(true);
     football = ValueNotifier<bool>(true);
     soccer = ValueNotifier<bool>(true);
+    location = ValueNotifier<GeoPoint>(new GeoPoint(47, 117)); // TODO: Use the user's current location.
   }
 
   /// Sets the values of each filter parameter. Use `true` to include a parameter in the results.

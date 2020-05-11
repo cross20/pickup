@@ -8,29 +8,38 @@ class LocationPage extends StatefulWidget {
 
 class _LocationPageState extends State<LocationPage> {
   final _searchBarController = TextEditingController();
-  List<String> _searchResults = new List<String>();
   String _googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
+  Uuid _uuid = new Uuid();
   String _sessionToken;
+  List<String> _searchResults = new List<String>();
 
   void initState() {
     super.initState();
     _searchBarController.addListener(() {
-      // TODO: The controller prevents the backspace character from working.
-      final text = _searchBarController.text;
-      _sessionToken = Uuid().v4();
-      displayPrediction(text);
-      _searchBarController.value = _searchBarController.value.copyWith(
-        text: text,
-        selection:
-            TextSelection(baseOffset: text.length, extentOffset: text.length),
-        composing: TextRange.empty,
-      );
+      if (_searchBarController.text == '') {
+        _searchResults.clear();
+      } else {
+        _searchResults.add('Current location');
+      }
+
+      if (_sessionToken == null) {
+        setState(() {
+          _sessionToken = _uuid.v4();
+        });
+      }
     });
   }
 
   void dispose() {
     _searchBarController.dispose();
     super.dispose();
+  }
+
+  /// Updates the search results so that they display in the [listView.builder].
+  void updateListView(List<String> values) {
+    setState(() {
+      _searchResults = List.from(values);
+    });
   }
 
   @override
@@ -52,8 +61,11 @@ class _LocationPageState extends State<LocationPage> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: TextFormField(
                 controller: _searchBarController,
+                onChanged: (String text) {
+                  displayPrediction(text);
+                },
                 decoration: InputDecoration(
-                  suffixIcon: Icon(Icons.location_searching),
+                  suffixIcon: Icon(Icons.location_on),
                   border: OutlineInputBorder(),
                   hintText: 'Enter an address',
                 ),
@@ -67,7 +79,6 @@ class _LocationPageState extends State<LocationPage> {
                         padding: EdgeInsets.all(0),
                         itemCount: _searchResults.length,
                         itemBuilder: (BuildContext context, int index) {
-
                           return Card(
                             child: ListTile(
                               title: Text(_searchResults[index]),
@@ -78,12 +89,12 @@ class _LocationPageState extends State<LocationPage> {
         ));
   }
 
-    // A method for a custom Google Places Autocomplete request
+  /// A function for a custom Google Places Autocomplete request
   void displayPrediction(String input) async {
     String baseURL =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json';
 
-    ///what type of autocomplete do we want?
+    // what type of autocomplete do we want?
     String type = 'address';
 
     String request =
@@ -95,13 +106,16 @@ class _LocationPageState extends State<LocationPage> {
     // get the body of the response message
     final predictions = response.data['predictions'];
 
-    //clear list for new elements
+    // clear list for new elements
     _searchResults.clear();
+    _searchResults.add('Current location');
 
     // add new elements
     for (var i = 0; i < predictions.length; i++) {
       String name = predictions[i]['description'];
       _searchResults.add(name);
     }
+
+    updateListView(_searchResults);
   }
 }
