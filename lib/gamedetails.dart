@@ -32,6 +32,7 @@ class GameDetailsPage extends StatefulWidget {
 }
 
 class _GameDetailsPageState extends State<GameDetailsPage> {
+  
   void _getUserLocation() async {
     DocumentSnapshot query = await Firestore.instance
         .collection(dbCol)
@@ -41,7 +42,10 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
     setState(() {
       _center = LatLng(
           query.data['location'].latitude, query.data['location'].longitude);
+
+         
     });
+
   }
 
   Game currentgame;
@@ -67,9 +71,11 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
     super.initState();
     // Initialize the current user location on first map build
     _getUserLocation();
+    
   }
 
   Widget build(BuildContext context) {
+    
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
     // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
     // in the materialApp.
@@ -98,11 +104,16 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                 sport: snap.data['sport'],
                 starttime: snap.data['starttime']);
 
-            markerlist.add(new Marker(
+
+                _getUserLocation();
+
+                   markerlist.add( new Marker(
               markerId: MarkerId(widget.gameid),
               position: LatLng(currentgame.location.latitude,
                   currentgame.location.longitude),
             ));
+            
+           
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
