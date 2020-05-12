@@ -29,11 +29,10 @@ dependencies:
   geolocator: ^5.3.1
   google_maps_webservice: ^0.0.16
   location: ^3.0.2
-  dio: ^2.1.13 # this dio package is for custom google places search
+  dio: ^3.0.9 # this dio package is for custom google places search
   uuid: ^2.0.1 # for the session tokens 
   geoflutterfire: ^2.1.0
   fluster: ^1.1.2 # for clustering the map markers
-    
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
