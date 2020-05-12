@@ -22,6 +22,7 @@ class Filter {
   /// Set the [value] property to `true` to include all games of type [soccer].
   ValueNotifier<bool> soccer;
 
+  /// The location specified by the user. This defaults to user's current location.
   ValueNotifier<GeoPoint> location;
 
   /// Default constructor for [Filter] where all values are `true` by default.

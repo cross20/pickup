@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:pickup_app/globals.dart';
 import 'package:uuid/uuid.dart';
 
 class LocationPage extends StatefulWidget {
@@ -12,9 +14,11 @@ class _LocationPageState extends State<LocationPage> {
   Uuid _uuid = new Uuid();
   String _sessionToken;
   List<String> _searchResults = new List<String>();
+  GeoPoint _selectedLocation;
 
   void initState() {
     super.initState();
+    _selectedLocation = filter.location.value;
     _searchBarController.addListener(() {
       if (_searchBarController.text == '') {
         _searchResults.clear();
@@ -35,7 +39,7 @@ class _LocationPageState extends State<LocationPage> {
     super.dispose();
   }
 
-  /// Updates the search results so that they display in the [listView.builder].
+  /// Generates a new list from [values] and sets [_searchResults] equal to this new list.
   void updateListView(List<String> values) {
     setState(() {
       _searchResults = List.from(values);
@@ -52,11 +56,21 @@ class _LocationPageState extends State<LocationPage> {
                 onPressed: () => Navigator.pop(context),
                 child: Icon(Icons.close)),
             Spacer(),
-            FlatButton(onPressed: null, child: Icon(Icons.done)),
+            FlatButton(
+                onPressed: () {
+                  filter.location.value = _selectedLocation;
+                  Navigator.pop(context);
+                },
+                child: Icon(Icons.done)),
           ],
         ),
         body: Column(
           children: <Widget>[
+            Container(
+              alignment: Alignment.topLeft,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Text('Searching for results near: ${_selectedLocation.latitude.toString()}, ${_selectedLocation.longitude.toString()}.'),
+            ),
             Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: TextFormField(
@@ -82,6 +96,13 @@ class _LocationPageState extends State<LocationPage> {
                           return Card(
                             child: ListTile(
                               title: Text(_searchResults[index]),
+                              onTap: () {
+                                if (index == 0) {
+                                  // TODO: Get the current location of the user.
+                                } else {
+                                  setLocationFromAddress(_searchResults[index]);
+                                }
+                              },
                             ),
                           );
                         })))
@@ -89,7 +110,9 @@ class _LocationPageState extends State<LocationPage> {
         ));
   }
 
-  /// A function for a custom Google Places Autocomplete request
+  /// Predicts the top 5 most likely addresses that match [input] and replaces
+  /// [_searchResults] with a new list generated from the predicted addresses. The generated
+  /// addresses are stored as [String] values.
   void displayPrediction(String input) async {
     String baseURL =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json';
@@ -117,5 +140,34 @@ class _LocationPageState extends State<LocationPage> {
     }
 
     updateListView(_searchResults);
+  }
+
+  /// Converts an address represented as a [String] into a [GeoPoint] and sets the
+  /// [_selectedLocation] variable using the [GeoPoint].
+  Future<void> setLocationFromAddress(String placesAddr) async {
+    String googlePlacesAPI = "AIzaSyBQTQwCWEASIKWsXPXyOx70kAenVJgrSA0";
+    String addrURL = placesAddr.replaceAll(" ", "+");
+    String requestURL =
+        "https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
+    Response response = await Dio().get(requestURL);
+    final results = response.data['results'];
+
+    List<String> res = results
+        .toString()
+        .split('location: ')
+        .toList()[1]
+        .split('location_type')
+        .toList()[0]
+        .replaceAll("[", "")
+        .replaceAll("lat:", "")
+        .replaceAll("{", "")
+        .replaceAll("},", "")
+        .replaceAll(" lng:", "")
+        .split(", ");
+
+    var latitude = double.parse(res[0]);
+    var longitude = double.parse(res[1]);
+
+    _selectedLocation = GeoPoint(latitude, longitude);
   }
 }
