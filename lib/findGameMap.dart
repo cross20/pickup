@@ -13,13 +13,8 @@ import 'gamedetails.dart';
 // Used for determining what type of platform user is on
 import 'dart:io' show Platform;
 
-
-
-
 // Set of markers that is used by the google Map API to place game locations on map
 Set<Marker> markerlist = new Set();
-
-
 
 class FindGameMap extends StatefulWidget {
   FindGameMap({Key key, this.title}) : super(key: key);
@@ -52,27 +47,12 @@ class _FindGameMapState extends State<FindGameMap> {
 // The above link helped me understand how to do this.
   void _getUserLocation() async {
     _userlocation = null;
-    // TODO: Check if user is allowing us to access their location.
 
-      Position position = await Geolocator()
-          .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-      setState(() {
-        _userlocation = LatLng(position.latitude, position.longitude);
-      });
-
-  
-    
-      // GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
-      // if(geolocationStatus == GeolocationStatus.denied || geolocationStatus == GeolocationStatus.disabled) {
-      //   print("Denied");
-      // setState(() {
-      //   _userlocation = LatLng(45.502800, -122.779533);
-      // });
-      // }
-    
-      // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
-
-  
+    Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    setState(() {
+      _userlocation = LatLng(position.latitude, position.longitude);
+    });
   }
 
   @override
@@ -83,79 +63,59 @@ class _FindGameMapState extends State<FindGameMap> {
   void initState() {
     super.initState();
 
-    if(Platform.isIOS) {
+    if (Platform.isIOS) {
       isIOS = true;
     }
 
-    
     // Upon initial start of the map check if the user is on IOS
-    
- 
+
     // if IOS, load the ios pictures
-  if(isIOS) {
-        BitmapDescriptor.fromAssetImage(
-      
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/smalliosBasketball.png')
-        .then((onValue) {
-      basketball = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/smalliosFootball.png')
-        .then((onValue) {
-      football = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/smalliosSoccer.png')
-        .then((onValue) {
-      soccer = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/smalliosBaseball.png')
-        .then((onValue) {
-      baseball = onValue;
-    });
-  }
-  // Android pictures
-  else {
-          BitmapDescriptor.fromAssetImage(
-      
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/Basketball.png')
-        .then((onValue) {
-      basketball = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/Football.png')
-        .then((onValue) {
-      football = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/Soccer.png')
-        .then((onValue) {
-      soccer = onValue;
-    });
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(
-                devicePixelRatio: 2.5),
-            'assets/Baseball.png')
-        .then((onValue) {
-      baseball = onValue;
-    });
-  }
-    
+    if (isIOS) {
+      BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: 2.5),
+              'assets/smalliosBasketball.png')
+          .then((onValue) {
+        basketball = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: 2.5),
+              'assets/smalliosFootball.png')
+          .then((onValue) {
+        football = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: 2.5),
+              'assets/smalliosSoccer.png')
+          .then((onValue) {
+        soccer = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: 2.5),
+              'assets/smalliosBaseball.png')
+          .then((onValue) {
+        baseball = onValue;
+      });
+    }
+    // Android pictures
+    else {
+      BitmapDescriptor.fromAssetImage(ImageConfiguration(devicePixelRatio: 2.5),
+              'assets/Basketball.png')
+          .then((onValue) {
+        basketball = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(
+              ImageConfiguration(devicePixelRatio: 2.5), 'assets/Football.png')
+          .then((onValue) {
+        football = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(
+              ImageConfiguration(devicePixelRatio: 2.5), 'assets/Soccer.png')
+          .then((onValue) {
+        soccer = onValue;
+      });
+      BitmapDescriptor.fromAssetImage(
+              ImageConfiguration(devicePixelRatio: 2.5), 'assets/Baseball.png')
+          .then((onValue) {
+        baseball = onValue;
+      });
+    }
+
     // Initialize the current user location on first map build
     _getUserLocation();
   }
@@ -166,7 +126,7 @@ class _FindGameMapState extends State<FindGameMap> {
 
 // This is the variable that will track the zindex for the google map markers.
 // The zindex determines what marker will take priority when there are overlapping
-// markers on the map. 
+// markers on the map.
   double markerzindex = 0;
 
 // This function takes in a snapshot generated from a streambuilder
@@ -204,8 +164,8 @@ class _FindGameMapState extends State<FindGameMap> {
           markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
           // Get latitude and longitude from the database
           position: LatLng(
-              snap.data.documents.elementAt(i).data['point']['geopoint'].latitude,
-              snap.data.documents.elementAt(i).data['point']['geopoint'].longitude),
+              snap.data.documents.elementAt(i).data['location'].latitude,
+              snap.data.documents.elementAt(i).data['location'].longitude),
           zIndex: markerzindex,
           // https://stackoverflow.com/questions/54084934/flutter-dart-add-custom-tap-events-for-google-maps-marker
           onTap: () {
@@ -228,7 +188,7 @@ class _FindGameMapState extends State<FindGameMap> {
             endtime = endtime.toLocal();
             var endtimeformatter = new DateFormat("jm");
             String formattedendtime = endtimeformatter.format(endtime);
-  
+
             // The showModalbottom sheet slides up a new view
             showModalBottomSheet(
                 context: context,
@@ -251,9 +211,6 @@ class _FindGameMapState extends State<FindGameMap> {
                                 .elementAt(i)
                                 .data['address']
                                 .toString(),
-                            // TODO: The sizing of this ListTile will be determined by FontSize.
-                            // TODO: We need to play around with fontsize to figure out what
-                            // looks best across all devices.
                             style: TextStyle(fontSize: 20)),
                         // In the future, the subtitle will pull values from the DB
                         subtitle: Text(
@@ -267,17 +224,18 @@ class _FindGameMapState extends State<FindGameMap> {
                                     .elementAt(i)
                                     .data['playersneeded']
                                     .toString(),
-                                // TODO: Implement players currently in the game once this feature is complete
-                                // by someone else.
-                               
                             style: TextStyle(fontSize: 15)),
                         trailing: RaisedButton(
                             onPressed: () {
                               // Navigate to the game detail page
                               Navigator.push(
-                                context, MaterialPageRoute(             // Pass the game ID to the page so we can access data for the specific game
-                                  builder: (context) => GameDetailsPage(snap.data.documents.elementAt(i).documentID))
-                              );
+                                  context,
+                                  MaterialPageRoute(
+                                      // Pass the game ID to the page so we can access data for the specific game
+                                      builder: (context) => GameDetailsPage(snap
+                                          .data.documents
+                                          .elementAt(i)
+                                          .documentID)));
                             },
                             child: Text("To Lobby")),
                         isThreeLine: true,
@@ -286,7 +244,6 @@ class _FindGameMapState extends State<FindGameMap> {
                   );
                 });
           },
-
 
           // Set icon to a sport ball
           icon: icon,
@@ -352,8 +309,6 @@ class _FindGameMapState extends State<FindGameMap> {
     currentmarkeridlist.clear();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     // We create the streambuilder here to allow us to constantly listen in to changes to the Games
@@ -363,7 +318,7 @@ class _FindGameMapState extends State<FindGameMap> {
         // Only fetch current games
         stream: Firestore.instance
             .collection(dbCol)
-            // .where('endtime', isGreaterThan: new DateTime.now()) // TODO: Filter by time.
+
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
             // google map
@@ -376,41 +331,30 @@ class _FindGameMapState extends State<FindGameMap> {
             checkmarkerlist(snapshot);
           } else {
             // Show this loading map screen when we are loading in the database data
-            return MaterialApp(
-                  home: Container(
-                    child: Center(
-                      child: Text(
-                        'loading map..',
-                        style: TextStyle(
-                            fontFamily: 'Avenir-Medium',
-                            color: Colors.grey[400]),
-                      ),
-                    ),
-                  ),
+            return Scaffold(
+              body: Container(
+                child: Center(child: Text("Loading map..."),)
+              )
             );
           }
           return MaterialApp(
-              // If the initial position is null, return a container saying that we are loading the map.
-              home: _userlocation == null
-                  ? Container(
-                      child: Center(
-                        child: Text(
-                          'loading map..',
-                          style: TextStyle(
-                              fontFamily: 'Avenir-Medium',
-                              color: Colors.grey[400]),
-                        ),
-                      ),
-                    )
-                  // Once the initial position is not null, create the google map.
-                  : GoogleMap(
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: CameraPosition(
-                        target: _userlocation,
-                        zoom: 11.0,
-                      ),
-                      markers: markerlist,
+            // If the initial position is null, return a container saying that we are loading the map.
+            home: _userlocation == null
+                ? Scaffold(
+                  body: Container(
+                   child: Center(child: Text("Loading map..."),)
+                )
+                )
+            
+                // Once the initial position is not null, create the google map.
+                : GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: _userlocation,
+                      zoom: 11.0,
                     ),
+                    markers: markerlist,
+                  ),
           );
         });
   }
