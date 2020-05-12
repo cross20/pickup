@@ -70,6 +70,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   void initState() {
     super.initState();
     // Initialize the current user location on first map build
+    _center = null;
     _getUserLocation();
     
   }
