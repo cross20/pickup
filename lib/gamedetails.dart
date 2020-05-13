@@ -105,9 +105,6 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                 sport: snap.data['sport'],
                 starttime: snap.data['starttime']);
 
-
-                _getUserLocation();
-
                    markerlist.add( new Marker(
               markerId: MarkerId(widget.gameid),
               position: LatLng(currentgame.location.latitude,
