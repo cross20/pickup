@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'appUI.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'game.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:async';
 import 'globals.dart';
 
 class GameDetailsPage extends StatefulWidget {
@@ -13,17 +11,6 @@ class GameDetailsPage extends StatefulWidget {
   // This game id will be used to query for vital game information.
   final String gameid;
 
-  // var gamedateformatter = new DateFormat('yMMMMEEEEd');
-  // String formattedgamedate = gamedateformatter.format(gamedate);
-
-  // var starttimeformatter = new DateFormat("jm");
-  // String formattedstarttime = starttimeformatter.format(starttime);
-
-  // DateTime endtime =
-  //     snap.data.documents.elementAt(i).data['endtime'].toDate();
-  // endtime = endtime.toLocal();
-  // var endtimeformatter = new DateFormat("jm");
-  // String formattedendtime = endtimeformatter.format(endtime);
 
   GameDetailsPage(this.gameid);
 
@@ -38,12 +25,9 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
         .collection(dbCol)
         .document(widget.gameid)
         .get();
-    // TODO: Change this so the user can input a location then have it be translated to latitude and longitude
     setState(() {
       _center = LatLng(
           query.data['location'].latitude, query.data['location'].longitude);
-
-         
     });
 
   }
@@ -77,20 +61,14 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
 
   Widget build(BuildContext context) {
     
-    // We create the streambuilder here to allow us to constantly listen in to changes to the Games
-    // database. The materialApp is wrapped inside the streambuilder so we can update data that is used
-    // in the materialApp.
     return new StreamBuilder(
-        // Only fetch current games
+        // Get the current game
         stream: Firestore.instance
             .collection(dbCol)
             .document(widget.gameid)
-            // Order in ascending order so we can track which games are older.
-            // This is so we can correctly layer the map using zindex on the
-            // google map
             .snapshots(),
         builder: (context, snapshot) {
-          // Any time the snapshot has new data, update the markerlsit
+          // Any time the snapshot has new data, update the game info
           if (snapshot.hasData) {
             AsyncSnapshot<DocumentSnapshot> snap = snapshot;
             currentgame = new Game(
@@ -110,8 +88,6 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
               position: LatLng(currentgame.location.latitude,
                   currentgame.location.longitude),
             ));
-            
-           
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
@@ -144,6 +120,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                         leading: Icon(Icons.pin_drop, color: Colors.blue),
                         title: Text(currentgame.address),
                       ),
+
                       ListTile(
                           leading:
                               Icon(Icons.calendar_today, color: Colors.blue),
@@ -158,6 +135,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                             title: Text(currentgame.sport),
                           ),
                         ),
+
                         Expanded(
                           child: ListTile(
                             leading: Icon(Icons.people, color: Colors.blue),
@@ -175,6 +153,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                                   currentgame.starttime.toDate().toLocal())),
                             ),
                           ),
+
                           Expanded(
                             child: ListTile(
                               leading:
@@ -190,6 +169,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                         leading: Icon(Icons.person, color: Colors.blue),
                         title: Text(currentgame.userid),
                       ),
+
                       ListTile(
                         leading: Icon(Icons.event_note, color: Colors.blue),
                         title: Text(currentgame.note),
@@ -216,27 +196,6 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                                 ),
                                 markers: markerlist,
                               )),
-
-                      //    home: _userlocation == null
-                      // ? Container(
-                      //     child: Center(
-                      //       child: Text(
-                      //         'loading map..',
-                      //         style: TextStyle(
-                      //             fontFamily: 'Avenir-Medium',
-                      //             color: Colors.grey[400]),
-                      //       ),
-                      //     ),
-                      //   )
-                      // // Once the initial position is not null, create the google map.
-                      // : GoogleMap(
-                      //     onMapCreated: _onMapCreated,
-                      //     initialCameraPosition: CameraPosition(
-                      //       target: _userlocation,
-                      //       zoom: 11.0,
-                      //     ),
-                      //     markers: markerlist,
-                      //   ),
 
                       RaisedButton(
                           onPressed: () {},

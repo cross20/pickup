@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'globals.dart';
-// For global device stats
-import 'package:geocoder/geocoder.dart';
-import 'package:fluster/fluster.dart';
-import 'package:meta/meta.dart';
 import 'gamedetails.dart';
 // Used for determining what type of platform user is on
 import 'dart:io' show Platform;
-
-
 
 class FindGameMap extends StatefulWidget {
   FindGameMap({Key key, this.title}) : super(key: key);
@@ -24,14 +17,11 @@ class FindGameMap extends StatefulWidget {
 }
 
 class _FindGameMapState extends State<FindGameMap> {
-
-  // Set of markers that is used by the google Map API to place game locations on map
-Set<Marker> markerlist = new Set();
   GoogleMapController mapController;
+  // Set of markers that is used by the google Map API to place game locations on map
+  Set<Marker> markerlist = new Set();
 
   bool isIOS = false;
-  // Default that the user does not have location services turned on
- 
 
   // This is the variable that will store the position
   // where the googlemap camera will go to
@@ -63,10 +53,6 @@ Set<Marker> markerlist = new Set();
   // global device stats.
   void initState() {
     super.initState();
- 
-
-
-
 
     if (Platform.isIOS) {
       isIOS = true;
@@ -139,11 +125,15 @@ Set<Marker> markerlist = new Set();
 // The function takes in this streambuilder data and accesses location
 // and properties for each game in our database. Then, it takes the data and creates
 // new markers to put on our google map to represent all the games in our database.
+
+// idlist will be used to track which markers have already been created in the map.
+  Set<String> idlist = new Set();
+
   void updatemarkerlist(AsyncSnapshot<QuerySnapshot> snap) {
     // Go through all of the games in the database
     for (int i = 0; i < snap.data.documents.length; i++) {
       // If the markerlist already contains a game with a certain ID, do not add it again
-      if (markerlist.contains(snap.data.documents.elementAt(i).documentID)) {
+      if (idlist.contains(snap.data.documents.elementAt(i).documentID)) {
         break;
       } else {
         var icon;
@@ -161,9 +151,12 @@ Set<Marker> markerlist = new Set();
             'Baseball') {
           icon = baseball;
         }
-        // Change the z index
+
+        // Change the zindex to prevent overlapping issues on markers
         markerzindex++;
-        // If the marker list doesn't contain the game already, then this game needs to be added to the marker list
+        // Add the current game we are adding to the gameid list
+        idlist.add(snap.data.documents.elementAt(i).documentID);
+        // this game needs to be added to the marker list
         markerlist.add(new Marker(
           // Set the markerID as the documentID from the database
           markerId: MarkerId(snap.data.documents.elementAt(i).documentID),
@@ -205,10 +198,7 @@ Set<Marker> markerlist = new Set();
                       ListTile(
                         // Load the correct image
                         leading: new Image.asset('assets/' +
-                            snap.data.documents
-                                .elementAt(i)
-                                .data['sport']
-                                +
+                            snap.data.documents.elementAt(i).data['sport'] +
                             '.png'),
                         // Need to pull the lat/lng so we can display the actual address
                         title: Text(
@@ -249,7 +239,6 @@ Set<Marker> markerlist = new Set();
                   );
                 });
           },
-
           // Set icon to a sport ball
           icon: icon,
         ));
@@ -323,7 +312,6 @@ Set<Marker> markerlist = new Set();
         // Only fetch current games
         stream: Firestore.instance
             .collection(dbCol)
-
             // Order in ascending order so we can track which games are older.
             // This is so we can correctly layer the map using zindex on the
             // google map
@@ -337,20 +325,20 @@ Set<Marker> markerlist = new Set();
           } else {
             // Show this loading map screen when we are loading in the database data
             return Scaffold(
-              body: Container(
-                child: Center(child: Text("Loading map..."),)
-              )
-            );
+                body: Container(
+                    child: Center(
+              child: Text("Loading map..."),
+            )));
           }
           return MaterialApp(
             // If the initial position is null, return a container saying that we are loading the map.
             home: _userlocation == null
                 ? Scaffold(
-                  body: Container(
-                   child: Center(child: Text("Loading map..."),)
-                )
-                )
-            
+                    body: Container(
+                        child: Center(
+                    child: Text("Loading map..."),
+                  )))
+
                 // Once the initial position is not null, create the google map.
                 : GoogleMap(
                     onMapCreated: _onMapCreated,
