@@ -208,7 +208,7 @@ Set<Marker> markerlist = new Set();
                             snap.data.documents
                                 .elementAt(i)
                                 .data['sport']
-                                .toString() +
+                                +
                             '.png'),
                         // Need to pull the lat/lng so we can display the actual address
                         title: Text(
