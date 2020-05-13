@@ -216,7 +216,7 @@ Set<Marker> markerlist = new Set();
                                 .elementAt(i)
                                 .data['address']
                                 .toString(),
-                            style: TextStyle(fontSize: 20)),
+                            style: TextStyle(fontSize: 18)),
                         // In the future, the subtitle will pull values from the DB
                         subtitle: Text(
                             formattedgamedate +
