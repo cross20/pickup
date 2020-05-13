@@ -47,7 +47,9 @@ class GameFeedState extends State<GameFeed> {
               stream: Firestore.instance.collection(dbCol).snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
+                  return Container(
+                      alignment: Alignment.topCenter,
+                      child: const CircularProgressIndicator());
                 }
 
                 filteredGames = getFilteredGames(snapshot.data.documents);
@@ -56,8 +58,25 @@ class GameFeedState extends State<GameFeed> {
                   return ListView.builder(
                       padding: const EdgeInsets.all(8),
                       itemCount: filteredGames.length,
-                      itemBuilder: (BuildContext context, int index) =>
-                          getGameCard(context, filteredGames[index]));
+                      itemBuilder: (BuildContext context, int index) {
+                        return FutureBuilder(
+                            future: location.getDistanceBetweenPoints(
+                                location.location,
+                                filteredGames[index].location),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<dynamic> snapshot) {
+                              if (snapshot.hasData) {
+                                return getGameCard(
+                                    context, snapshot.data, filteredGames[index]);
+                              } else {
+                                return Column(
+                                  children: <Widget>[
+                                    const CircularProgressIndicator(),
+                                  ],
+                                );
+                              }
+                            });
+                      });
                 } else {
                   return Text('No games');
                 }
@@ -81,7 +100,8 @@ class GameFeedState extends State<GameFeed> {
               // Filter by location (current or specified).
               children: <Widget>[
                 FlatButton(
-                  onPressed: () => Navigator.of(context).push(_createRoute(LocationPage())),
+                  onPressed: () =>
+                      Navigator.of(context).push(_createRoute(LocationPage())),
                   child: Icon(Icons.edit_location),
                 ),
                 // Choose how to view games. Either in list or map form.
@@ -193,19 +213,19 @@ double distanceBetweenPoints(GeoPoint a, GeoPoint b) {
 }
 
 /// Formats each individual game to appear in the listView.builder.
-Widget getGameCard(BuildContext context, Game g) {
+Widget getGameCard(BuildContext context, double distanceInMeters, Game g) {
   DateFormat date = new DateFormat('MMM d');
   DateFormat time = (MediaQuery.of(context).alwaysUse24HourFormat)
       ? new DateFormat('HH:MM')
       : new DateFormat('hh:mm a');
-  // TODO: Figure out how to compute distance from one point to another.
+  double distanceInMiles = distanceInMeters / 1609.34;
 
   return new Card(
     child: ListTile(
       title: Text('${g.sport} Game'),
       subtitle: Text(
           '${date.format(g.starttime.toDate())} at ${time.format(g.starttime.toDate())},\n' +
-              '0.1 miles away,\n' +
+              '${distanceInMiles.toStringAsFixed(2)} miles away,\n' +
               '${g.playersneeded} players needed.'),
       trailing: Icon(Icons.chevron_right),
       isThreeLine: true,

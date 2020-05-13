@@ -15,10 +15,11 @@ class _LocationPageState extends State<LocationPage> {
   String _sessionToken;
   List<String> _searchResults = new List<String>();
   GeoPoint _selectedLocation;
+  bool _selectedUserLocation = false;
 
   void initState() {
     super.initState();
-    _selectedLocation = filter.location.value;
+    _setLocation(location.location);
     _searchBarController.addListener(() {
       if (_searchBarController.text == '') {
         _searchResults.clear();
@@ -40,9 +41,17 @@ class _LocationPageState extends State<LocationPage> {
   }
 
   /// Generates a new list from [values] and sets [_searchResults] equal to this new list.
-  void updateListView(List<String> values) {
+  void _updateListView(List<String> values) {
     setState(() {
       _searchResults = List.from(values);
+    });
+  }
+
+  void _setLocation(GeoPoint location) {
+    setState(() {
+      if (location != null) {
+        _selectedLocation = location;
+      }
     });
   }
 
@@ -58,7 +67,11 @@ class _LocationPageState extends State<LocationPage> {
             Spacer(),
             FlatButton(
                 onPressed: () {
-                  filter.location.value = _selectedLocation;
+                  if (_selectedUserLocation) {
+                    location.setCurrentLocation(false);
+                  } else {
+                    location.location = _selectedLocation;
+                  }
                   Navigator.pop(context);
                 },
                 child: Icon(Icons.done)),
@@ -69,7 +82,7 @@ class _LocationPageState extends State<LocationPage> {
             Container(
               alignment: Alignment.topLeft,
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Text('Searching for results near: ${_selectedLocation.latitude.toString()}, ${_selectedLocation.longitude.toString()}.'),
+              child: Text('Select a location to search near.'),
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -98,10 +111,13 @@ class _LocationPageState extends State<LocationPage> {
                               title: Text(_searchResults[index]),
                               onTap: () {
                                 if (index == 0) {
-                                  // TODO: Get the current location of the user.
+                                  _selectedUserLocation = true;
                                 } else {
                                   setLocationFromAddress(_searchResults[index]);
+                                  _selectedUserLocation = false;
                                 }
+                                _searchBarController.text =
+                                    _searchResults[index];
                               },
                             ),
                           );
@@ -139,7 +155,7 @@ class _LocationPageState extends State<LocationPage> {
       _searchResults.add(name);
     }
 
-    updateListView(_searchResults);
+    _updateListView(_searchResults);
   }
 
   /// Converts an address represented as a [String] into a [GeoPoint] and sets the
