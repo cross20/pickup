@@ -95,8 +95,8 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
             AsyncSnapshot<DocumentSnapshot> snap = snapshot;
             currentgame = new Game(
                 id: widget.gameid,
-                userid: "Pull user ID here",
-                address: "Pull address here",
+                userid: snap.data['userId'],
+                address: snap.data['address'],
                 endtime: snap.data['endtime'],
                 location: snap.data['location'],
                 note: snap.data['note'],

@@ -139,6 +139,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     Game game = new Game(
         endtime: _endtime,
         geoLocation: _location,
+        address: _addr,
         location: _location.geoPoint,
         note: _note,
         playersneeded: _playersneeded,

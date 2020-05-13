@@ -13,8 +13,7 @@ import 'gamedetails.dart';
 // Used for determining what type of platform user is on
 import 'dart:io' show Platform;
 
-// Set of markers that is used by the google Map API to place game locations on map
-Set<Marker> markerlist = new Set();
+
 
 class FindGameMap extends StatefulWidget {
   FindGameMap({Key key, this.title}) : super(key: key);
@@ -25,11 +24,14 @@ class FindGameMap extends StatefulWidget {
 }
 
 class _FindGameMapState extends State<FindGameMap> {
+
+  // Set of markers that is used by the google Map API to place game locations on map
+Set<Marker> markerlist = new Set();
   GoogleMapController mapController;
 
   bool isIOS = false;
   // Default that the user does not have location services turned on
-  bool locationservices = true;
+ 
 
   // This is the variable that will store the position
   // where the googlemap camera will go to
@@ -40,7 +42,6 @@ class _FindGameMapState extends State<FindGameMap> {
   BitmapDescriptor soccer;
   BitmapDescriptor basketball;
   BitmapDescriptor baseball;
-
 // This function gets the users current location using their
 // devices location.
 // https://stackoverflow.com/questions/57657152/how-to-set-initial-camera-position-to-the-current-devices-latitude-and-longitud
@@ -62,6 +63,10 @@ class _FindGameMapState extends State<FindGameMap> {
   // global device stats.
   void initState() {
     super.initState();
+ 
+
+
+
 
     if (Platform.isIOS) {
       isIOS = true;

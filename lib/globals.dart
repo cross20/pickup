@@ -5,4 +5,4 @@ import 'filter.dart';
 Filter filter = Filter();
 
 /// The name in the database of the collection where [Game] objects are found.
-String dbCol = 'GamesGeoQuery';
+String dbCol = 'Games';
