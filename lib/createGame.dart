@@ -4,18 +4,12 @@ import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:dio/dio.dart';
-import 'appUI.dart';
-import 'authentication.dart';
-import 'authroot.dart';
-import 'splashscreen.dart';
-import 'package:dio/dio.dart';
-import 'appUI.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 // google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -35,11 +29,6 @@ class CreateGamePage extends StatefulWidget {
       _CreateGamePageState(userId: this.userId);
 }
 
-// this class is for setting the state of the page, it is stateful so widgets within this class can change.
-// This class starts off by defining all the data types and methods I need to properly display and save all game data needed.
-// Then the updateData() method is next, which is called when user hits submit, this is where the Game object is created
-// and sent to the database.
-// Finally is the build method, where all the Widgets are that are needed for this UI
 class _CreateGamePageState extends State<CreateGamePage> {
   String userId;
   _CreateGamePageState({this.userId}) {}
@@ -54,7 +43,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
   //for the session ID token
   var uuid = new Uuid();
   String _sessionToken;
-  List<String> _placesList = [];
   GeoFirePoint _location;
 
   //String for the selected sport
@@ -66,10 +54,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
   final myControlSport = TextEditingController(); // for sport selection
   final myControlpub = TextEditingController(); // for pub/priv match selection
 
-  //init value of user inputted address
+  //placeholder for addr controller text
   String addr = " ";
 
-  //init value of user inputted message
+  //placeholder for msg controller text
   String msg = " ";
 
   //Number of players wanted, init to 2
@@ -78,13 +66,17 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // List to store the 5 results from address search
   List<String> _displayedResults = [];
 
+  // List to store place_id of results
+  List<String> _placeIDs = [];
+
+  //Validate place of play list
+  List<String Function(dynamic)> _placeValidation;
+
   //bool for pub vs priv match
   bool private = false;
 
-  //init userId
-
   ///init values from Date and times of game
-  var gameDate = DateTime.now();
+  var gameDate = DateTime(1980);
   var startGameTime = DateTime.now();
   var endGameTime = DateTime.now();
 
@@ -99,15 +91,35 @@ class _CreateGamePageState extends State<CreateGamePage> {
   }
 
   // A method for a custom Google Places Autocomplete request
-  void displayPrediction(String input) async {
+  // inspired from 1ManStartup on Youtube
+  Future<List<String>> displayPrediction(String input) async {
     String baseURL =
         'https://maps.googleapis.com/maps/api/place/autocomplete/json';
 
-    ///what type of autocomplete do we want?
-    String type = 'address';
+    //type string for type of search
+    // request string for rest of url
+    String type;
+    String request;
 
-    String request =
-        '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
+    ///Regex to search for starting numbers
+    RegExp addrStart = RegExp(r'^[0-9-]$');
+
+    ///Regex to search for starting letters
+    RegExp estaStart = RegExp(r'[A-Za-z]');
+
+    //Is search an address or establishment?
+    if (addrStart.hasMatch(input.substring(0, 1))) {
+      ///what type of autocomplete do we want?
+      type = 'address';
+      request =
+          '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
+    } else if (estaStart.hasMatch(input.substring(0, 1))) {
+      ///what type of autocomplete do we want?
+      type = 'establishment';
+
+      request =
+          '$baseURL?input=$input&key=$googlePlacesAPI&type=$type&sessiontoken=$_sessionToken';
+    }
 
     // send http request
     Response response = await Dio().get(request);
@@ -115,14 +127,22 @@ class _CreateGamePageState extends State<CreateGamePage> {
     // get the body of the response message
     final predictions = response.data['predictions'];
 
-    //clear list for new elements
+    //clear lists for new elements
     _displayedResults.clear();
+    _placeIDs.clear();
 
     // add new elements
     for (var i = 0; i < predictions.length; i++) {
+      //Add name
       String name = predictions[i]['description'];
       _displayedResults.add(name);
+
+      //Add place_id
+      String placeID = predictions[i]['place_id'];
+      _placeIDs.add(placeID);
     }
+
+    return _displayedResults;
   }
 
   // Function to create a new game and add to the firestore database.
@@ -151,23 +171,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
     print("Id in game is" + userId);
   }
 
-  // this is so Text Widgets do not have to be re-written multiple times in the Widget build method
-  Container text(String key, double maxWidth) {
-    return Container(
-        child: Text(
-          key,
-          style: TextStyle(fontSize: 20),
-        ),
-        constraints: BoxConstraints(
-            maxHeight: 50.0,
-            minHeight: 50.0,
-            maxWidth: maxWidth,
-            minWidth: 50.0),
-        alignment: Alignment.center);
-  }
   //_onSearchChanged is so that a new sessionToken can be assigned to the new search
   // this way the company is not charged for each individual API search, but rather
-  // charged for every session
+  // charged for every session (from 1ManStartup on Youtube)
   _onSearchChanged() {
     if (_sessionToken == null) {
       setState(() {
@@ -182,9 +188,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // Then breaks down the body to the coordinates we need by splitting and deleting
   //    many words and symbols
   Future<void> getCoordinates(String placesAddr) async {
-    String addrURL = placesAddr.replaceAll(" ", "+");
     String requestURL =
-        "https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&address=$addrURL";
+        "https://maps.googleapis.com/maps/api/geocode/json?key=$googlePlacesAPI&place_id=$placesAddr";
     Response response = await Dio().get(requestURL);
     final results = response.data['results'];
 
@@ -201,6 +206,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
         .replaceAll(" lng:", "")
         .split(", ");
 
+    //convert from String to doubles
     var latitude = double.parse(res[0]);
     var longitude = double.parse(res[1]);
 
@@ -215,35 +221,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
     Timestamp _endtime = Timestamp.fromDate(endGameTime);
 
     //function to get the coordinates from selected address
-    await getCoordinates(myControllerAddr.text);
+    await getCoordinates(_placeIDs[_displayedResults.indexOf(addr)]);
 
     //need to reset session token after submit button is selected
     _sessionToken = null;
 
-      // A game will be pushed to the database everytime the "submit" button is clicked
-      creategame(_endtime, _location, myControllerAddr.text, myControlMsg.text, _currentNumPlay,
-          private, selectedSport, _starttime, userId);
-  }
-
-  // // Function to create a new game and add to the firestore database.
-  // void creategame(Timestamp _endtime, GeoPoint _location, String _addr, String _note,
-  //     int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
-  //   Game game = new Game(
-  //     address: _addr,
-  //     endtime: _endtime,
-  //     location: _location,
-  //     note: _note,
-  //     playersneeded: _playersneeded,
-  //     private: _private,
-  //     sport: _sport,
-  //     starttime: _starttime,
-  //   );
-  //   instance.addgame(game.toMap());
-  // }
-
-  ///For the selection of bottom nav items
-  void _onBotNavTap(int index) {
-    newRoute(index, context);
+    // A game will be pushed to the database everytime the "submit" button is clicked
+    creategame(_endtime, _location, addr, msg, _currentNumPlay, private,
+        selectedSport, _starttime, userId);
   }
 
   @override
@@ -254,41 +239,61 @@ class _CreateGamePageState extends State<CreateGamePage> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
               FormBuilder(
+                // based on example given at https://pub.dev/packages/flutter_form_builder
                 // context,
                 key: _fbKey,
                 autovalidate: false,
-                initialValue: {
-                  'movie_rating': 5,
-                },
                 readOnly: false,
                 child: Column(
                   children: <Widget>[
                     // Address input
-                    FormBuilderTypeAhead(
-                      decoration: InputDecoration(
-                        labelText: "Address",
+                    TypeAheadFormField(
+                      hideOnEmpty: true,
+                      hideOnLoading: true,
+                      textFieldConfiguration: TextFieldConfiguration(
+                        keyboardType: TextInputType.visiblePassword,
+                        controller: myControllerAddr,
+                        onChanged: (value) {
+                          _displayedResults.clear();
+                        },
+                        decoration: InputDecoration(
+                          labelText: "Where are you playing?",
+                        ),
                       ),
-                      attribute: 'address',
-                      onChanged: (text) {
-                        displayPrediction(text);
+                      validator: (value) {
+                        if (value == null || value == "") {
+                          return "Must enter a place to play.";
+                        } else if (!_displayedResults
+                            .contains(myControllerAddr.text)) {
+                          return "Must select a valid place or address.";
+                        }
                       },
                       itemBuilder: (context, address) {
-                        return ListTile(
-                          title: Text(address),
-                        );
+                        if (_displayedResults.isNotEmpty) {
+                          return ListTile(
+                            title: Text(address),
+                          );
+                        }
+                        return ListTile(title: Text("No results found"));
                       },
-                      controller: myControllerAddr,
-                      initialValue: myControllerAddr.text,
-                      suggestionsCallback: (address) {
+                      onSuggestionSelected: (address) {
+                        myControllerAddr.text = address;
+                      },
+                      suggestionsCallback: (address) async {
                         if (address.length != 0) {
-                          return _displayedResults.getRange(0, 3);
-                        } else {
-                          return null;
+                          /// call on Places request method here to 
+                          /// populate the itemBuilder list
+                          await displayPrediction(address);
+                          if (_displayedResults.length >= 4) {
+                            return _displayedResults.take(3);
+                          } else if (_displayedResults.length < 4) {
+                            return _displayedResults;
+                          }
                         }
                       },
                     ),
@@ -298,69 +303,108 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       firstDate: DateTime(DateTime.now().year,
                           DateTime.now().month, DateTime.now().day, 00, 00),
                       lastDate: DateTime(DateTime.now().year + 1),
+                      validators: [
+                        FormBuilderValidators.required(
+                            errorText: "Please select a date.")
+                      ],
                       inputType: InputType.date,
                       format: DateFormat("EEEE, MMMM d, yyyy"),
                       onChanged: (date) {
-                        if (date != null)
-                          {
-                            gameDate = DateTime(
-                              date.year,
-                              date.month,
-                              date.day,
-                            );
-                          }
+                        if (date != null) {
+                          gameDate = DateTime(
+                            date.year,
+                            date.month,
+                            date.day,
+                          );
+                        }
                       },
                       decoration: InputDecoration(
                         labelText: "Date",
-                        // helperText: "Helper text",
-                        // hintText: "Hint text",
                       ),
                     ),
                     //start time (Android)
-                    FormBuilderDateTimePicker(
-                      attribute: "start time",
-                      onChanged: (date) {
-                        if (date != null)
-                          {
-                            startGameTime = DateTime(
-                                gameDate.year,
-                                gameDate.month,
-                                gameDate.day,
-                                date.hour,
-                                date.minute,
-                                00);
-                          }
+                    DateTimeField(
+                      validator: (value) {
+                        //make sure time is not null
+                        if (value == null) {
+                          return "Please select a start time";
+                        }
+                        // make sure start time is not after end time
+                        if (startGameTime.isAfter(endGameTime)) {
+                          return "Start time cannot be after end time.";
+                        }
+                        // make sure start time is not in the past
+                        else if (startGameTime.isBefore(DateTime.now())) {
+                          return "Start time cannot be in the past.";
+                        }
+                        // make sure start and end are not at same time
+                        else if (startGameTime.isAtSameMomentAs(endGameTime)) {
+                          return "Start and end time cannot be the same time.";
+                        }
                       },
-                      inputType: InputType.time,
+                      onChanged: (date) {
+                        if (date != null) {
+                          startGameTime = DateTime(
+                              gameDate.year,
+                              gameDate.month,
+                              gameDate.day,
+                              date.hour,
+                              date.minute,
+                              00);
+                        }
+                      },
+                      onShowPicker: (context, currentValue) async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(hour: 12, minute: 0),
+                        );
+                        return DateTimeField.convert(time);
+                      },
                       format: DateFormat("h:mma"),
                       decoration: InputDecoration(
                         labelText: "Start Time",
                       ),
-                      validator: (val) => null,
-                      initialTime: TimeOfDay(hour: 12, minute: 0),
                     ),
                     //end time (Android)
-                    FormBuilderDateTimePicker(
-                      attribute: "end time",
-                      onChanged: (date) {
-                        if (date != null)
-                          {
-                            endGameTime = DateTime(
-                                gameDate.year,
-                                gameDate.month,
-                                gameDate.day,
-                                date.hour,
-                                date.minute,
-                                00);
-                          }
+                    DateTimeField(
+                      validator: (value) {
+                        if (value == null) {
+                          return "Please select an end time";
+                        }
+                        if (endGameTime.isBefore(startGameTime)) {
+                          return "End time cannot be before start time.";
+                        } else if (endGameTime
+                            .isAtSameMomentAs(startGameTime)) {
+                          return "Start and end time cannot be the same time.";
+                        } else if (endGameTime.isBefore(DateTime.now())) {
+                          return "End time cannot be in the past.";
+                        }
+                        //Make sure games are at least an hour
+                        else if (endGameTime
+                                .difference(startGameTime)
+                                .abs()
+                                .inMinutes <
+                            60) {
+                          return "Game must at least one hour";
+                        }
                       },
-                      inputType: InputType.time,
+                      onChanged: (date) {
+                        if (date != null) {
+                          endGameTime = DateTime(gameDate.year, gameDate.month,
+                              gameDate.day, date.hour, date.minute, 00);
+                        }
+                      },
+                      onShowPicker: (context, currentValue) async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(hour: 12, minute: 0),
+                        );
+                        return DateTimeField.convert(time);
+                      },
                       format: DateFormat("h:mma"),
                       decoration: InputDecoration(
                         labelText: "End Time",
                       ),
-                      validator: (val) => null,
-                      initialTime: TimeOfDay(hour: 12, minute: 0),
                     ),
                     //private match checkbox
                     FormBuilderCheckbox(
@@ -387,7 +431,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       onChanged: (sport) {
                         selectedSport = sport;
                       },
-                      validators: [FormBuilderValidators.required()],
+                      validators: [
+                        FormBuilderValidators.required(
+                            errorText: "Please select a sport")
+                      ],
                       options: ["Basketball", "Soccer", "Football", "Baseball"]
                           .map((lang) => FormBuilderFieldOption(
                                 value: lang,
@@ -405,12 +452,11 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       max: 24,
                       initialValue: 2,
                       divisions: 22,
-                      activeColor: Colors.red,
-                      inactiveColor: Colors.pink[100],
+                      activeColor: Colors.blue,
+                      inactiveColor: Colors.lightBlueAccent[50],
                       numberFormat: NumberFormat("#0", "en_US"),
                       decoration: InputDecoration(
                         labelText: "Number of players wanted",
-                        border: InputBorder.none,
                       ),
                     ),
                     FormBuilderTextField(
@@ -431,12 +477,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
                     child: MaterialButton(
                       color: Theme.of(context).accentColor,
                       child: Text(
-                        "Submit",
+                        "Reset",
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        _updateData();
                         _fbKey.currentState.reset();
+                        myControllerAddr.clear();
+                        myControlMsg.clear();
+                        Scaffold.of(context).showSnackBar(SnackBar(content: Text("Form reset")));
                       },
                     ),
                   ),
@@ -447,14 +495,24 @@ class _CreateGamePageState extends State<CreateGamePage> {
                     child: MaterialButton(
                       color: Theme.of(context).accentColor,
                       child: Text(
-                        "Reset",
+                        "Submit",
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        setState(() {
+                        _fbKey.currentState.validate();
+                        if (_fbKey.currentState.validate()) {
+                          addr = myControllerAddr.text;
+                          msg = myControlMsg.text;
+                          _updateData();
+                          _fbKey.currentState.reset();
+                          //Clear address and message after creating game
                           myControllerAddr.clear();
-                        });
-                        _fbKey.currentState.reset();
+                          myControlMsg.clear();
+                          Scaffold.of(context).showSnackBar(SnackBar(
+                              content: Text('Game has been created!')));
+                        } else
+                          Scaffold.of(context).showSnackBar(
+                              SnackBar(content: Text('Invalid entrance')));
                       },
                     ),
                   ),
@@ -463,7 +521,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
             ],
           ),
         ),
-      ),// This trailing comma makes auto-formatting nicer for build methods.
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
