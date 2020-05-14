@@ -37,16 +37,14 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   }
 
   Game currentgame;
-
   GoogleMapController _controller;
+  //bool joinedGameState = instance.gamestatus(global.userId, widget.gameid);
 
   static LatLng _center;
 
   void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
   }
-
-
   //checks if the user has joined the game or not
     bool usergamestatus(String userid, String games)
     {
@@ -64,9 +62,6 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
       {
         instance.leaveuser(userid,games);
       }
-
-    
-
 
   Set<Marker> markerlist = new Set();
 
@@ -86,7 +81,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   }
 
   Widget build(BuildContext context) {
-    
+    bool joinedGameState = instance.gamestatus(global.userId, widget.gameid);
     return new StreamBuilder(
         // Get the current game
         stream: Firestore.instance
@@ -223,14 +218,26 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                                 markers: markerlist,
                               )),
 
-                      RaisedButton(
-                          onPressed: () {
-
+                      new RaisedButton(
+                        onPressed: () {
+                          if(joinedGameState == false) {
                             updatetheuser(global.userId, widget.gameid);
-                          },
+                            setState(() {
+                              joinedGameState = !joinedGameState;
+                            });
+                          }
+                          else{
+                            leavetheuser(global.userId, widget.gameid);
+                            setState(() {
+                              joinedGameState = !joinedGameState;
+                            });
+                          }
+                        },
                           textColor: Colors.white,
-                          color: Colors.blue,
-                          child: Text("Join Game"))
+                          color: joinedGameState ? Colors.red: Colors.blue,
+                          child: joinedGameState ? Text("Leave Game"): Text("Join Game"),
+                  )
+
                     ],
                   ),
                 ),

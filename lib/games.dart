@@ -68,6 +68,33 @@ class Games {
     return games;
   }
 
+  Future<String> createAlertDialog(BuildContext context, Game game) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Are you sure you want to delete this game?"),
+            actions: <Widget>[
+              MaterialButton(
+                  child: Text("No"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+              MaterialButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Firestore.instance
+                      .collection(dbCol)
+                      .document(game.id)
+                      .delete();
+                  Navigator.of(context).pop(game.sport);
+                },
+              )
+            ],
+          );
+        });
+  }
+
   /// Formats game data in a [Card] providing an overview of game deatils. The included game
   /// details are: sport, start date, start time, and players needed. When [useEditMode] is
   /// false, the distance is excluded.
@@ -79,7 +106,7 @@ class Games {
       @required Game game,
       DateFormat dateFormat,
       DateFormat timeFormat,
-      bool useEditMode,
+      bool canDelete,
       bool useMetricUnits}) {
     DateFormat date =
         (dateFormat != null ? dateFormat : new DateFormat('MMM d'));
@@ -91,7 +118,7 @@ class Games {
             : new DateFormat('hh:mm a'));
 
     useMetricUnits = (useMetricUnits != null ? useMetricUnits : false);
-    useEditMode = (useEditMode != null ? useEditMode : false);
+    canDelete = (canDelete != null ? canDelete : false);
 
     double distance = (useMetricUnits
         ? game.distanceInMeters / 1000
@@ -102,23 +129,38 @@ class Games {
         title: Text('${game.sport} Game'),
         subtitle: Text(
             '${date.format(game.starttime.toDate())} at ${time.format(game.starttime.toDate())},\n' +
-                (useEditMode
+                (canDelete
                     ? ''
                     : '${distance.toStringAsFixed(2)}' +
                         (useMetricUnits ? ' km away' : ' miles away') +
                         ',\n') +
                 '${game.playersneeded} players needed.'),
-        trailing: (useEditMode ? Icon(Icons.edit) : Icon(Icons.chevron_right)),
-        isThreeLine: !useEditMode,
-        contentPadding: useEditMode
+        trailing: (canDelete
+            ? new IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  createAlertDialog(context, game).then((name) {
+                    if(name != null) {
+                      SnackBar confirmDelete = SnackBar(
+                          content: Text("Your $name game has been deleted."));
+                      Scaffold.of(context).showSnackBar(confirmDelete);
+                    }
+                  });
+                },
+              )
+            : Icon(Icons.chevron_right)),
+        isThreeLine: !canDelete,
+        contentPadding: canDelete
             ? EdgeInsets.fromLTRB(14, 10, 14, 10)
             : EdgeInsets.fromLTRB(14, 0, 14, 10),
         onTap: () {
-          if (useEditMode) {
+          if (canDelete) {
             // TODO: Send the game to the correct game editing page.
             // TODO: Do everything that should happen when in edit mode.
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => CreateGamePage()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GameDetailsPage(game.id)));
           } else {
             Navigator.push(
                 context,

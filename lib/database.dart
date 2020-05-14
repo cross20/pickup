@@ -42,13 +42,12 @@ class Database {
    }
 
     //checks if the user has joined the particular game on the games details page or not
-   bool gamestatus(String _userid, String games){
+   bool gamestatus(String _userid, String gameID){
       var data = firestoreDb.collection('User').document(_userid);
       data.get().then((dataSnapshot){
         if (dataSnapshot.exists){   
-            return ((dataSnapshot.data['games']).contains("soccer"));
+            return ((dataSnapshot.data['games']).contains(gameID));
         }
-       
       });
 
       return false;
@@ -61,8 +60,8 @@ class Database {
     return games;
   }
 
-  List<dynamic> getGamesbyUser(){
-    firestoreDb.collection(dbCol).where('userId', isEqualTo:"MeqU5s6zeUbSDQeWOOncpl4cdyn1").snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
+  Stream<dynamic> getGamesbyUser(String userId){
+    firestoreDb.collection(dbCol).where('userId', isEqualTo: userId).snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
     return usergames;
   }
 }
