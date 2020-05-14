@@ -3,7 +3,6 @@ import 'game.dart';
 import 'database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -43,7 +42,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   //for the session ID token
   var uuid = new Uuid();
   String _sessionToken;
-  GeoFirePoint _location;
+  GeoPoint _location;
 
   //String for the selected sport
   String selectedSport = " ";
@@ -148,7 +147,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
-      GeoFirePoint _location,
+      GeoPoint _location,
       String _addr,
       String _note,
       int _playersneeded,
@@ -158,9 +157,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
       String _userId) {
     Game game = new Game(
         endtime: _endtime,
-        geoLocation: _location,
         address: _addr,
-        location: _location.geoPoint,
+        location: _location,
         note: _note,
         playersneeded: _playersneeded,
         private: _private,
@@ -210,7 +208,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
     var latitude = double.parse(res[0]);
     var longitude = double.parse(res[1]);
 
-    _location = GeoFirePoint(latitude, longitude);
+    _location = GeoPoint(latitude, longitude);
   }
 
   /// this function is called when submit button is hit, this is where values are updated and casted to proper data type

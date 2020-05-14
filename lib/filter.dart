@@ -7,8 +7,7 @@ import 'package:flutter/material.dart';
 ///
 /// Currently, filtering by [sport] is the only supported filter.
 class Filter {
-  // Public member variables.
-
+  
   /// Set the [value] property to `true` to include all games of type [baseball].
   ValueNotifier<bool> baseball;
 
@@ -37,10 +36,15 @@ class Filter {
     this.soccer.value = soccer;
   }
 
-  /// Listens to changes on any parameter in this class. It does this by merging all parameters into
-  /// one [Listenable] object.
-  Listenable allValues() {
-    final List<ValueNotifier<bool> > values = [baseball, basketball, football, soccer];
+  /// Listens to changes on [baseball], [basketball], [football], and [soccer]. It does this
+  /// by merging all parameters into one [Listenable] object.
+  Listenable allSportsValues() {
+    final List<ValueNotifier<bool>> values = [
+      baseball,
+      basketball,
+      football,
+      soccer
+    ];
 
     // Do not modify [values] after merging. Doing so will cause memory leaks.
     return Listenable.merge(values);

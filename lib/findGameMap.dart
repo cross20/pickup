@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'globals.dart';
-import 'gamedetails.dart';
+import 'gameDetailsPage.dart';
 // Used for determining what type of platform user is on
 import 'dart:io' show Platform;
 

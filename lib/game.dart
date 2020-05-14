@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
 
 // Data Model Class to store game information and allow for both serialization and deserialization
 // of firebase data.
@@ -8,7 +7,6 @@ class Game {
   String userid;
   String address;
   Timestamp endtime;
-  GeoFirePoint geoLocation;
   GeoPoint location;
   String note;
   int playersneeded;
@@ -17,10 +15,13 @@ class Game {
   Timestamp starttime;
   String userId;
 
+  /// The distance (in meters) between the global [location.location] and the game's [location].
+  /// The default value is -1 if the distance hasn't been computed yet. This value is not stored
+  /// in the database.
+  double distanceInMeters;
+
   toString() {
     return this.endtime.toString() +
-        ', ' +
-        this.geoLocation.toString() +
         ', ' +
         this.location.toString() +
         ', ' +
@@ -32,27 +33,28 @@ class Game {
         ', ' +
         this.sport +
         ', ' +
-        this.starttime.toString()+
-         ',' +
+        this.starttime.toString() +
+        ',' +
         this.userId.toString();
   }
 
   // Default Constructor
   Game(
-      { this.id,
+      {this.id,
       this.userid,
       this.address,
       this.endtime,
-      this.geoLocation,
       this.location,
       this.note,
       this.playersneeded,
       this.private,
       this.sport,
       this.starttime,
-      this.userId});
-  
-  // Function that allows for deserializaiton of Game Objects from the 
+      this.userId}) {
+    distanceInMeters = -1;
+  }
+
+  // Function that allows for deserializaiton of Game Objects from the
   // firestore database. When we will be retreiving game information from the
   // database, they will be returned to us in Map form. We need this
   // fromMap function to easily convert the firestore data to be accessed
@@ -62,7 +64,6 @@ class Game {
     data = data ?? {};
     return Game(
       endtime: data['endtime'] ?? '',
-      geoLocation: data['point'] ?? '',
       location: data['location'] ?? '',
       address: data['address'] ?? '',
       note: data['note'] ?? '',
@@ -88,7 +89,6 @@ class Game {
     return Game(
       id: doc.documentID,
       endtime: data['endtime'] ?? '',
-      geoLocation: data['point'] ?? '',
       location: data['location'] ?? '',
       address: data['address'] ?? '',
       note: data['note'] ?? '',
@@ -106,7 +106,6 @@ class Game {
   /// https://flutter.institute/firebase-firestore/
   Map<String, dynamic> toMap() => {
         'endtime': this.endtime,
-        'point': this.geoLocation.data,
         'location': this.location,
         'address': this.address,
         'note': this.note,
@@ -114,6 +113,6 @@ class Game {
         'private': this.private,
         'sport': this.sport,
         'starttime': this.starttime,
-        'userId':this.userId
+        'userId': this.userId
       };
 }

@@ -1,9 +1,9 @@
 import 'package:pickup_app/findGameMap.dart';
-import 'package:pickup_app/myGamesUI.dart';
+import 'package:pickup_app/gamesPage.dart';
+import 'package:pickup_app/myGamesPage.dart';
 import 'package:flutter/material.dart';
 import 'createGame.dart';
-import 'gameFeed.dart';
-import 'gamedetails.dart';
+import 'gameDetailsPage.dart';
 import 'signup_login.dart';
 import 'authroot.dart';
 import 'authentication.dart';
@@ -25,11 +25,10 @@ class MyApp extends StatelessWidget {
         '/map':(BuildContext context) => FindGameMap(title: "This is the map"),
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),
-        '/gameFeed':(BuildContext context) => GameFeed(),
+        '/gameFeed':(BuildContext context) => GamesPage(),
         '/myGames':(BuildContext context) => MyGamesPage(),
         '/gamedetails' : (BuildContext context) => GameDetailsPage("Game ID Value"),
       }
     );
   }
 }
-
