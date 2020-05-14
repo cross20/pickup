@@ -4,6 +4,11 @@ import 'game.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'globals.dart';
+import 'globals.dart' as global;
+import 'database.dart';
+
+
+Database instance = new Database();
 
 class GameDetailsPage extends StatefulWidget {
   // This variable will store the gameid
@@ -40,6 +45,28 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
   }
+
+
+  //checks if the user has joined the game or not
+    bool usergamestatus(String userid, String games)
+    {
+      return instance.gamestatus(userid,games);
+    }
+    
+  //user joins the game and user collection is updated
+  void updatetheuser(String userid, String games) 
+      {
+        instance.updateuser(userid,games);
+      }
+
+    //user leaves the game and user collection is updated
+   void leavetheuser(String userid, String games) 
+      {
+        instance.leaveuser(userid,games);
+      }
+
+    
+
 
   Set<Marker> markerlist = new Set();
 
@@ -197,7 +224,10 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                               )),
 
                       RaisedButton(
-                          onPressed: () {},
+                          onPressed: () {
+
+                            updatetheuser(global.userId, widget.gameid);
+                          },
                           textColor: Colors.white,
                           color: Colors.blue,
                           child: Text("Join Game"))

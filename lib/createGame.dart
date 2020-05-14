@@ -1,3 +1,5 @@
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+
 /////This is the game creation page
 import 'game.dart';
 import 'database.dart';
@@ -7,8 +9,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'user.dart';
+
+import 'globals.dart' as globals;
 
 // google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -144,6 +147,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
     return _displayedResults;
   }
 
+
+    
+  
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
@@ -169,6 +175,22 @@ class _CreateGamePageState extends State<CreateGamePage> {
     print("Id in game is" + userId);
   }
 
+
+  
+  // this is so Text Widgets do not have to be re-written multiple times in the Widget build method
+  Container text(String key, double maxWidth) {
+    return Container(
+        child: Text(
+          key,
+          style: TextStyle(fontSize: 20),
+        ),
+        constraints: BoxConstraints(
+            maxHeight: 50.0,
+            minHeight: 50.0,
+            maxWidth: maxWidth,
+            minWidth: 50.0),
+        alignment: Alignment.center);
+  }
   //_onSearchChanged is so that a new sessionToken can be assigned to the new search
   // this way the company is not charged for each individual API search, but rather
   // charged for every session (from 1ManStartup on Youtube)

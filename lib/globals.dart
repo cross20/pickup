@@ -1,3 +1,5 @@
+library pickup.globals;
+
 import 'filter.dart';
 import 'location.dart';
 
@@ -11,3 +13,7 @@ Location location = Location();
 
 /// The name in the database of the collection where [Game] objects are found.
 String dbCol = 'Games';
+//String dbCol = 'GamesGeoQuery';
+
+String userId = "Defaultest";
+String profileId = "DefaultProfile";
