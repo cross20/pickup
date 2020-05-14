@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pickup_app/createGame.dart';
+import 'package:pickup_app/gamedetails.dart';
 import 'globals.dart';
 
 class MyGamesPage extends StatefulWidget {
@@ -20,13 +21,35 @@ class _MyGamesPageState extends State<MyGamesPage> {
 
   Stream<QuerySnapshot> gamesSnapshots() {
     //function to display desired games (can be changed)
-    CollectionReference col = Firestore.instance.collection(dbCol);
-     return col.where('userId', isEqualTo: this.userId).snapshots();
+    return col.where('userId', isEqualTo: this.userId).snapshots();
+    // TODO: add code to assure game is not finished
+  }
+
+  Future<String> createAlertDialog(BuildContext context, DocumentSnapshot document){
+    return showDialog(context: context,
+        builder: (context) {
+      return AlertDialog(
+        title: Text("Are you sure you want to delete this game?"),
+        actions: <Widget>[
+          MaterialButton(
+            child: Text("No"),
+              onPressed: () {
+              Navigator.of(context).pop();
+              }),
+          MaterialButton(
+            child: Text("Yes"),
+              onPressed: () {
+              Firestore.instance.collection(dbCol).document(document.documentID).delete();
+              Navigator.of(context).pop(document['sport']);
+              },
+          )
+        ],
+      );
+        } );
   }
 
   Widget createdGamesList() {
     Query q = col.where('userId', isEqualTo: this.userId);
-
     if (q.snapshots().isEmpty != true) {
       return Expanded(
           child: StreamBuilder(
@@ -71,6 +94,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
     CollectionReference col = Firestore.instance.collection(dbCol);
     Query q = col.where('userId', isEqualTo: this.userId);
     bool test = true;
+    //TODO: mess with empty query to display 'no games' widget
     if (test != true) {
       return Expanded(
           child: StreamBuilder(
@@ -124,12 +148,21 @@ class _MyGamesPageState extends State<MyGamesPage> {
           style: DefaultTextStyle.of(context).style.apply(fontSizeFactor: 1),
         )),
         trailing: new IconButton(
-          icon: Icon(Icons.edit),
+          icon: Icon(Icons.delete),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => CreateGamePage()));
+            createAlertDialog(context, document).then((game){
+              SnackBar confirmDelete = SnackBar(content: Text("Your $game game has been deleted."));
+              Scaffold.of(context).showSnackBar(confirmDelete);
+            });
           },
         ),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  // Pass the game ID to the page so we can access data for the specific game
+                  builder: (context) => GameDetailsPage(document.documentID)));
+        },
       ),
     );
   }
@@ -187,7 +220,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
             child: createdGamesList(),
           ),
           //Container(
-            //child: joinedGamesList(),
+          //child: joinedGamesList(),
           //)
         ],
       ),
