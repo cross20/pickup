@@ -238,6 +238,7 @@ class _FindGameMapState extends State<FindGameMap> {
                         isThreeLine: true,
                       ),
 
+
                 
                     ],
                   );
@@ -330,18 +331,22 @@ class _FindGameMapState extends State<FindGameMap> {
             // Show this loading map screen when we are loading in the database data
             return Scaffold(
                 body: Container(
-                    child: Center(
-              child: Text("Loading map..."),
-            )));
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                        padding: EdgeInsets.all(16),
+                        child: const CircularProgressIndicator()),
+                  ));
           }
           return MaterialApp(
             // If the initial position is null, return a container saying that we are loading the map.
             home: _userlocation == null
                 ? Scaffold(
                     body: Container(
-                        child: Center(
-                    child: Text("Loading map..."),
-                  )))
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                        padding: EdgeInsets.all(16),
+                        child: const CircularProgressIndicator()),
+                  ),)
 
                 // Once the initial position is not null, create the google map.
                 : GoogleMap(
