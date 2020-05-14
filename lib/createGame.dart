@@ -232,11 +232,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
           private, selectedSport, _starttime, userId);
   }
 
-   void thegamestatus(String userid, String games) 
-      {
-        instance.gamestatus(userid,games);
-      }
-
+   
     
      
   // // Function to create a new game and add to the firestore database.
@@ -449,9 +445,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                     // _updateData();
-                     // _fbKey.currentState.reset();
-                     thegamestatus(globals.userId, 'baseball');
+                      _updateData();
+                     _fbKey.currentState.reset();
+                    
                       
                       },
                     ),
