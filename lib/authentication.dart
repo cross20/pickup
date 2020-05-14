@@ -2,6 +2,10 @@
 
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'database.dart';
+import 'user.dart';
+
+Database instance = new Database();
 
 
 //constructor for BaseAuth
@@ -12,14 +16,21 @@ abstract class BaseAuth {
 
   Future<FirebaseUser> getCurrentUser();
 
-  
 
   Future<void> sendEmailVerification();
 
   Future<void> signOut();
 
   Future<bool> isEmailVerified();
+
+ 
 }
+
+void createuser(String _userid, List <String>_games) {
+      User user = new User(userid: _userid, games:_games);
+      //instance.adduser(user.toMap());  
+      instance.adduser(_userid);
+  }
 
 class Auth implements BaseAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -31,13 +42,19 @@ class Auth implements BaseAuth {
     return user.uid;
   }
 
+    
+
+
   Future<String> signUp(String email, String password) async {
     AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
+         FirebaseUser user = result.user;
+         String userid = user.uid.toString();
+         createuser(userid, []);
         
-    FirebaseUser user = result.user;
-    print(user.uid);
-    return user.uid;
+        return user.uid;
+    
+   
   }
 
   Future<FirebaseUser> getCurrentUser() async {

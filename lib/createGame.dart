@@ -16,6 +16,9 @@ import 'appUI.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'user.dart';
+
+import 'globals.dart' as globals;
 
 // google places packages
 import "package:google_maps_webservice/places.dart"; // for the GoogleMapPlaces
@@ -125,6 +128,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
     }
   }
 
+
+    
+  
   // Function to create a new game and add to the firestore database.
   void creategame(
       Timestamp _endtime,
@@ -150,6 +156,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
     print("Id in game is" + userId);
   }
 
+
+  
   // this is so Text Widgets do not have to be re-written multiple times in the Widget build method
   Container text(String key, double maxWidth) {
     return Container(
@@ -224,6 +232,13 @@ class _CreateGamePageState extends State<CreateGamePage> {
           private, selectedSport, _starttime, userId);
   }
 
+   void thegamestatus(String userid, String games) 
+      {
+        instance.gamestatus(userid,games);
+      }
+
+    
+     
   // // Function to create a new game and add to the firestore database.
   // void creategame(Timestamp _endtime, GeoPoint _location, String _addr, String _note,
   //     int _playersneeded, bool _private, String _sport, Timestamp _starttime) {
@@ -434,8 +449,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
-                        _updateData();
-                        _fbKey.currentState.reset();
+                     // _updateData();
+                     // _fbKey.currentState.reset();
+                     thegamestatus(globals.userId, 'baseball');
+                      
                       },
                     ),
                   ),

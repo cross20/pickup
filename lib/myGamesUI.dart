@@ -185,6 +185,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
         children: <Widget>[
           Container(
             child: createdGamesList(),
+           
           ),
           //Container(
             //child: joinedGamesList(),
