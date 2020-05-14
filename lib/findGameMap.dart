@@ -232,9 +232,13 @@ class _FindGameMapState extends State<FindGameMap> {
                                           .elementAt(i)
                                           .documentID)));
                             },
-                            child: Text("To Lobby")),
+                          textColor: Colors.white,
+                          color: Colors.blue,
+                            child: Text("Game Info")),
                         isThreeLine: true,
                       ),
+
+                
                     ],
                   );
                 });

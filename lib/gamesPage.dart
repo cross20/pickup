@@ -29,43 +29,71 @@ class _GamesPageState extends State<GamesPage> {
           Container(
             color: Colors.blue,
             child: Row(
-              // Filter by location (current or specified).
-              children: <Widget>[
-                FlatButton(
-                  onPressed: () =>
-                      Navigator.of(context).push(_createRoute(LocationPage())),
-                  child: Icon(Icons.edit_location),
-                ),
-                // Choose how to view games. Either in list or map form.
-                Expanded(
-                  child: ButtonBar(
-                    alignment: MainAxisAlignment.center,
-                    buttonMinWidth: 80.0,
-                    children: <Widget>[
-                      RaisedButton(
-                        onPressed: () => shouldShowGameFeed(true),
-                        child: Text(
-                          'List',
+                // Filter by location (current or specified).
+                // Show different widgets in row based on the value selected
+                children: _showGameFeed
+                    ? <Widget>[
+                        FlatButton(
+                          onPressed: () => Navigator.of(context)
+                              .push(_createRoute(LocationPage())),
+                          child: Icon(Icons.edit_location),
                         ),
-                      ),
-                      RaisedButton(
-                        onPressed: () => shouldShowGameFeed(false),
-                        child: Text(
-                          'Map',
+
+                        // Choose how to view games. Either in list or map form.
+                        Expanded(
+                          child: ButtonBar(
+                            alignment: MainAxisAlignment.center,
+                            buttonMinWidth: 80.0,
+                            children: <Widget>[
+                              RaisedButton(
+                                onPressed: () => shouldShowGameFeed(true),
+                                child: Text(
+                                  'List',
+                                ),
+                              ),
+                              RaisedButton(
+                                onPressed: () => shouldShowGameFeed(false),
+                                child: Text(
+                                  'Map',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
-                FlatButton(
-                  onPressed: () {
-                    Navigator.of(context).push(_createRoute(FilterPage()));
-                  },
-                  child: Icon(Icons.filter_list),
-                )
-              ],
-            ),
+                        // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
+
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .push(_createRoute(FilterPage()));
+                          },
+                          child: Icon(Icons.filter_list),
+                        )
+                      ]
+                    : <Widget>[
+                        // Choose how to view games. Either in list or map form.
+                        Expanded(
+                          child: ButtonBar(
+                            alignment: MainAxisAlignment.center,
+                            buttonMinWidth: 80.0,
+                            children: <Widget>[
+                              RaisedButton(
+                                onPressed: () => shouldShowGameFeed(true),
+                                child: Text(
+                                  'List',
+                                ),
+                              ),
+                              RaisedButton(
+                                onPressed: () => shouldShowGameFeed(false),
+                                child: Text(
+                                  'Map',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
+                      ]),
           ),
           // Determine which Widget to show on game feed route.
           _showGameFeed
