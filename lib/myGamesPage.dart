@@ -21,7 +21,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
   Stream<QuerySnapshot> gamesSnapshots() {
     //function to display desired games (can be changed)
     CollectionReference col = Firestore.instance.collection(dbCol);
-     return col.where('userId', isEqualTo: this.userId).snapshots();
+    return col.where('userId', isEqualTo: this.userId).snapshots();
   }
 
   Widget createdGamesList() {
@@ -187,7 +187,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
             child: createdGamesList(),
           ),
           //Container(
-            //child: joinedGamesList(),
+          //child: joinedGamesList(),
           //)
         ],
       ),

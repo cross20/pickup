@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'authentication.dart';
-import 'gameFeed.dart';
 import 'createGame.dart';
-import 'myGamesUI.dart';
+import 'gamesPage.dart';
+import 'myGamesPage.dart';
 
 class SplashScreenPage extends StatefulWidget {
   SplashScreenPage(
@@ -59,7 +59,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     _pageOptions = List();
 
     //pages are added to the list after this widget is built
-    _pageOptions.add(GameFeed());
+    _pageOptions.add(GamesPage());
     _pageOptions.add(CreateGamePage(userId: _userId));
     _pageOptions.add(MyGamesPage(userId: _userId));
 

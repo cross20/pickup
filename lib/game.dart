@@ -15,6 +15,11 @@ class Game {
   Timestamp starttime;
   String userId;
 
+  /// The distance (in meters) between the global [location.location] and the game's [location].
+  /// The default value is -1 if the distance hasn't been computed yet. This value is not stored
+  /// in the database.
+  double distanceInMeters;
+
   toString() {
     return this.endtime.toString() +
         ', ' +
@@ -28,14 +33,14 @@ class Game {
         ', ' +
         this.sport +
         ', ' +
-        this.starttime.toString()+
-         ',' +
+        this.starttime.toString() +
+        ',' +
         this.userId.toString();
   }
 
   // Default Constructor
   Game(
-      { this.id,
+      {this.id,
       this.userid,
       this.address,
       this.endtime,
@@ -45,9 +50,11 @@ class Game {
       this.private,
       this.sport,
       this.starttime,
-      this.userId});
-  
-  // Function that allows for deserializaiton of Game Objects from the 
+      this.userId}) {
+    distanceInMeters = -1;
+  }
+
+  // Function that allows for deserializaiton of Game Objects from the
   // firestore database. When we will be retreiving game information from the
   // database, they will be returned to us in Map form. We need this
   // fromMap function to easily convert the firestore data to be accessed
@@ -103,6 +110,6 @@ class Game {
         'private': this.private,
         'sport': this.sport,
         'starttime': this.starttime,
-        'userId':this.userId
+        'userId': this.userId
       };
 }

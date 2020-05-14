@@ -14,11 +14,13 @@ class _LocationPageState extends State<LocationPage> {
   Uuid _uuid = new Uuid();
   String _sessionToken;
   List<String> _searchResults = new List<String>();
-  GeoPoint _selectedLocation;
+  GeoPoint _selectedLocation; // Holds the location computed from an address.
+  GeoPoint _preparedLocation; // Holds the user's current location.
   bool _selectedUserLocation = false;
 
   void initState() {
     super.initState();
+    location.prepareQuickLocatin();
     _setLocation(location.location);
     _searchBarController.addListener(() {
       if (_searchBarController.text == '') {
@@ -68,7 +70,8 @@ class _LocationPageState extends State<LocationPage> {
             FlatButton(
                 onPressed: () {
                   if (_selectedUserLocation) {
-                    location.setCurrentLocation(false);
+                    // TODO: Getting the user location takes too long. It needs to spped up!
+                    location.setCurrentLocation(true);
                   } else {
                     location.location = _selectedLocation;
                   }
@@ -112,6 +115,7 @@ class _LocationPageState extends State<LocationPage> {
                               onTap: () {
                                 if (index == 0) {
                                   _selectedUserLocation = true;
+                                  
                                 } else {
                                   setLocationFromAddress(_searchResults[index]);
                                   _selectedUserLocation = false;
