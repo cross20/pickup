@@ -39,10 +39,8 @@ class _FindGameMapState extends State<FindGameMap> {
   void _getUserLocation() async {
     _userlocation = null;
 
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
     setState(() {
-      _userlocation = LatLng(position.latitude, position.longitude);
+      _userlocation = LatLng(location.location.latitude, location.location.longitude);
     });
   }
 
@@ -323,11 +321,15 @@ class _FindGameMapState extends State<FindGameMap> {
             .orderBy('endtime', descending: false)
             .snapshots(),
         builder: (context, snapshot) {
+          if (_userlocation != LatLng(location.location.latitude, location.location.longitude)){
+              _getUserLocation();
+          } 
           // Any time the snapshot has new data, update the markerlsit
           if (snapshot.hasData) {
             updatemarkerlist(snapshot);
             checkmarkerlist(snapshot);
-          } else {
+          }
+          else {
             // Show this loading map screen when we are loading in the database data
             return Scaffold(
                 body: Container(

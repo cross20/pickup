@@ -72,6 +72,11 @@ class _GamesPageState extends State<GamesPage> {
                       ]
                     : <Widget>[
                         // Choose how to view games. Either in list or map form.
+                        FlatButton(
+                          onPressed: () => Navigator.of(context)
+                              .push(_createRoute(LocationPage())),
+                          child: Icon(Icons.edit_location),
+                        ),
                         Expanded(
                           child: ButtonBar(
                             alignment: MainAxisAlignment.center,
@@ -92,6 +97,13 @@ class _GamesPageState extends State<GamesPage> {
                             ],
                           ),
                         ),
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .push(_createRoute(FilterPage()));
+                          },
+                          child: Icon(Icons.filter_list),
+                        )
                         // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
                       ]),
           ),
