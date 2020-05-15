@@ -49,9 +49,7 @@ class Database {
             return ((dataSnapshot.data['games']).contains(gameID));
         }
       });
-
       return false;
-     
    }
 
  //Returns all the games information in array format
@@ -60,8 +58,8 @@ class Database {
     return games;
   }
 
-  Stream<dynamic> getGamesbyUser(String userId){
-    firestoreDb.collection(dbCol).where('userId', isEqualTo: userId).snapshots().listen((data)=> data.documents.forEach((doc)=>games.add(doc.data)));
+  List<dynamic> getGamesbyUser(String userId){
+    firestoreDb.collection(dbCol).where('userId', isEqualTo: userId).snapshots().listen((data)=> data.documents.forEach((doc)=>usergames.add(doc.data)));
     return usergames;
   }
 }

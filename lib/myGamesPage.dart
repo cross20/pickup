@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class MyGamesPage extends StatefulWidget {
 class _MyGamesPageState extends State<MyGamesPage> {
   String userId;
   Games gamesOverlord = new Games();
-  List<Game> allGames = new List<Game>();
+
 
   _MyGamesPageState({this.userId});
 
@@ -28,6 +29,16 @@ class _MyGamesPageState extends State<MyGamesPage> {
     CollectionReference col = Firestore.instance.collection(dbCol);
     return col.where('userId', isEqualTo: this.userId).snapshots();
   }
+
+  Stream<DocumentSnapshot> joinedGamesSnapshots(){
+    var data = Firestore.instance.collection('User').document(this.userId);
+    data.get().then((dataSnapshot){
+      if(dataSnapshot.exists){
+        print(dataSnapshot);
+      }
+    });
+
+
 
   Widget createdGamesList() {
     return Expanded(
@@ -46,7 +57,6 @@ class _MyGamesPageState extends State<MyGamesPage> {
               padding: const EdgeInsets.all(8.0),
               itemCount: snapshot.data.documents.length,
               itemBuilder: (BuildContext context, int index) {
-                // TODO: Implement new type of cards!
                 Game g = Game.fromFirestore(snapshot.data.documents[index]);
                 return gamesOverlord.getGameCard(
                     context: context, game: g, canDelete: true);
@@ -62,30 +72,30 @@ class _MyGamesPageState extends State<MyGamesPage> {
   Widget joinedGamesList() {
     return Expanded(
         child: StreamBuilder(
-      stream: instance.getGamesbyUser(this.userId),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container(
-            alignment: Alignment.topCenter,
-            child: Container(
-                padding: EdgeInsets.all(16),
-                child: const CircularProgressIndicator()),
-          );
-        } else if (snapshot.hasData) {
-          return ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              itemCount: snapshot.data.documents.length,
-              itemBuilder: (BuildContext context, int index) {
-                Game g = Game.fromFirestore(snapshot.data.documents[index]);
-                return gamesOverlord.getGameCard(
-                    context: context, game: g, canDelete: true);
-                //return listBody(context, snapshot.data.documents[index]);
-              });
-        } else {
-          return Text('No games');
-        }
-      },
-    ));
+          stream: joinedGamesSnapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Container(
+                alignment: Alignment.topCenter,
+                child: Container(
+                    padding: EdgeInsets.all(16),
+                    child: const CircularProgressIndicator()),
+              );
+            } else if (snapshot.hasData) {
+              return ListView.builder(
+                  padding: const EdgeInsets.all(8.0),
+                  itemCount: snapshot.data.documents.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Game g = Game.fromFirestore(snapshot.data.documents[index]);
+                    return gamesOverlord.getGameCard(
+                        context: context, game: g, canDelete: false);
+                    //return listBody(context, snapshot.data.documents[index]);
+                  });
+            } else {
+              return Text('No games');
+            }
+          },
+        ));
   }
 
   @override
@@ -95,7 +105,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
         children: <Widget>[
           AppBar(
             title: Text("Created Games"),
-              centerTitle: true,
+            centerTitle: true,
           ),
           Container(
             child: createdGamesList(),

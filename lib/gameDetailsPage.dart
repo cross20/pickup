@@ -38,7 +38,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
 
   Game currentgame;
   GoogleMapController _controller;
-  //bool joinedGameState = instance.gamestatus(global.userId, widget.gameid);
+  bool joinedGameState;
 
   static LatLng _center;
 
@@ -77,11 +77,11 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
     // Initialize the current user location on first map build
     _center = null;
     _getUserLocation();
-    
+    joinedGameState = instance.gamestatus(global.userId, widget.gameid);
   }
 
   Widget build(BuildContext context) {
-    bool joinedGameState = instance.gamestatus(global.userId, widget.gameid);
+
     return new StreamBuilder(
         // Get the current game
         stream: Firestore.instance
