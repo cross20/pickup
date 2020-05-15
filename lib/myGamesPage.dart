@@ -30,13 +30,10 @@ class _MyGamesPageState extends State<MyGamesPage> {
     return col.where('userId', isEqualTo: this.userId).snapshots();
   }
 
-  Stream<DocumentSnapshot> joinedGamesSnapshots(){
-    var data = Firestore.instance.collection('User').document(this.userId);
-    data.get().then((dataSnapshot){
-      if(dataSnapshot.exists){
-        print(dataSnapshot);
-      }
-    });
+  Stream<QuerySnapshot> joinedGamesSnapshots() {
+    CollectionReference col = Firestore.instance.collection(dbCol);
+    return col.where('userId', isEqualTo: this.userId).snapshots();
+  }
 
 
 
