@@ -71,8 +71,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
   // List to store place_id of results
   List<String> _placeIDs = [];
 
-  //Validate place of play list
-  List<String Function(dynamic)> _placeValidation;
+  /// auto validation key
+  bool _autovalidate = false;
 
   //bool for pub vs priv match
   bool private = false;
@@ -108,6 +108,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
 
     ///Regex to search for starting letters
     RegExp estaStart = RegExp(r'[A-Za-z]');
+
 
     //Is search an address or establishment?
     if (addrStart.hasMatch(input.substring(0, 1))) {
@@ -255,7 +256,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create Game Page"),
+        title: Text("Create A Game"),
         centerTitle: true,
       ),
       body: Padding(
@@ -267,32 +268,34 @@ class _CreateGamePageState extends State<CreateGamePage> {
                 // based on example given at https://pub.dev/packages/flutter_form_builder
                 // context,
                 key: _fbKey,
-                autovalidate: false,
+                autovalidate: _autovalidate,
                 readOnly: false,
                 child: Column(
                   children: <Widget>[
                     // Address input
-                    TypeAheadFormField(
+                    FormBuilderTypeAhead(
+                      attribute: "place_input",
                       hideOnEmpty: true,
                       hideOnLoading: true,
+                      decoration: InputDecoration(
+                          labelText: "Where are you playing?",
+                        ),
+                      controller: myControllerAddr,
                       textFieldConfiguration: TextFieldConfiguration(
                         keyboardType: TextInputType.visiblePassword,
-                        controller: myControllerAddr,
                         onChanged: (value) {
                           _displayedResults.clear();
                         },
-                        decoration: InputDecoration(
-                          labelText: "Where are you playing?",
-                        ),
                       ),
-                      validator: (value) {
+                      validators: [FormBuilderValidators.required(errorText: "Please enter a place to play"),
+                      (value) {
                         if (value == null || value == "") {
                           return "Must enter a place to play.";
                         } else if (!_displayedResults
                             .contains(myControllerAddr.text)) {
                           return "Must select a valid place or address.";
                         }
-                      },
+                      },],
                       itemBuilder: (context, address) {
                         if (_displayedResults.isNotEmpty) {
                           return ListTile(
@@ -343,12 +346,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
                       ),
                     ),
                     //start time (Android)
-                    DateTimeField(
-                      validator: (value) {
-                        //make sure time is not null
-                        if (value == null) {
-                          return "Please select a start time";
-                        }
+                    FormBuilderDateTimePicker(
+                      validators: [FormBuilderValidators.required(errorText: "Please enter a start time"),
+                        (value) {
                         // make sure start time is not after end time
                         if (startGameTime.isAfter(endGameTime)) {
                           return "Start time cannot be after end time.";
@@ -361,7 +361,8 @@ class _CreateGamePageState extends State<CreateGamePage> {
                         else if (startGameTime.isAtSameMomentAs(endGameTime)) {
                           return "Start and end time cannot be the same time.";
                         }
-                      },
+                      },],
+                      attribute: "start_time",
                       onChanged: (date) {
                         if (date != null) {
                           startGameTime = DateTime(
@@ -373,24 +374,18 @@ class _CreateGamePageState extends State<CreateGamePage> {
                               00);
                         }
                       },
-                      onShowPicker: (context, currentValue) async {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(hour: 12, minute: 0),
-                        );
-                        return DateTimeField.convert(time);
-                      },
+                      inputType: InputType.time,
+                      initialTime: TimeOfDay(hour: 12, minute: 0),
                       format: DateFormat("h:mma"),
                       decoration: InputDecoration(
                         labelText: "Start Time",
                       ),
                     ),
                     //end time (Android)
-                    DateTimeField(
-                      validator: (value) {
-                        if (value == null) {
-                          return "Please select an end time";
-                        }
+                    FormBuilderDateTimePicker(
+                      validators: [
+                        FormBuilderValidators.required(errorText: "Please enter an end time"),
+                        (value) {
                         if (endGameTime.isBefore(startGameTime)) {
                           return "End time cannot be before start time.";
                         } else if (endGameTime
@@ -399,7 +394,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
                         } else if (endGameTime.isBefore(DateTime.now())) {
                           return "End time cannot be in the past.";
                         }
-                        //Make sure games are at least an hour
+                        // Make sure games are at least an hour
                         else if (endGameTime
                                 .difference(startGameTime)
                                 .abs()
@@ -407,20 +402,16 @@ class _CreateGamePageState extends State<CreateGamePage> {
                             60) {
                           return "Game must at least one hour";
                         }
-                      },
+                      },],
+                      attribute: "end_time",
                       onChanged: (date) {
                         if (date != null) {
                           endGameTime = DateTime(gameDate.year, gameDate.month,
                               gameDate.day, date.hour, date.minute, 00);
                         }
                       },
-                      onShowPicker: (context, currentValue) async {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(hour: 12, minute: 0),
-                        );
-                        return DateTimeField.convert(time);
-                      },
+                      inputType: InputType.time,
+                      initialTime: TimeOfDay(hour: 12, minute: 0),
                       format: DateFormat("h:mma"),
                       decoration: InputDecoration(
                         labelText: "End Time",
@@ -505,6 +496,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
                         myControllerAddr.clear();
                         myControlMsg.clear();
                         Scaffold.of(context).showSnackBar(SnackBar(content: Text("Form reset")));
+                        setState(() {
+                          _autovalidate = false;
+                        });
                       },
                     ),
                   ),
@@ -530,9 +524,13 @@ class _CreateGamePageState extends State<CreateGamePage> {
                           myControlMsg.clear();
                           Scaffold.of(context).showSnackBar(SnackBar(
                               content: Text('Game has been created!')));
-                        } else
+                        } else {
                           Scaffold.of(context).showSnackBar(
                               SnackBar(content: Text('Invalid entrance')));
+                          setState(() {
+                            _autovalidate = true;
+                          });
+                        }
                       },
                     ),
                   ),
