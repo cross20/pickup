@@ -117,6 +117,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               home: Container(
                 child: Center(
                   child: Text(
@@ -129,6 +130,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
             );
           }
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
               title: "Game Detail Page",
               // If the initial position is null, return a container saying that we are loading the map.
               home: Scaffold(
@@ -216,6 +218,10 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                               flex: 2,
                               child: GoogleMap(
                                 onMapCreated: _onMapCreated,
+                                myLocationButtonEnabled: false,
+                                zoomControlsEnabled: true,
+                                zoomGesturesEnabled: true,
+                                mapToolbarEnabled: true,
                                 initialCameraPosition: CameraPosition(
                                   target: _center,
                                   zoom: 15,
@@ -230,7 +236,12 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                           },
                           textColor: Colors.white,
                           color: Colors.blue,
-                          child: Text("Join Game"))
+                          child: Text("Join Game")),
+
+                      Padding(
+                        padding: EdgeInsets.all(16.0),
+                      ),
+                    
                     ],
                   ),
                 ),

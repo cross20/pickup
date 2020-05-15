@@ -228,7 +228,7 @@ class _MyGamesPageState extends State<MyGamesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('My Games')),
+      appBar: AppBar(title: Text('Your Games')),
       body: Column(
         children: <Widget>[
           Container(
