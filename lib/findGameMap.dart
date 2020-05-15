@@ -239,7 +239,7 @@ class _FindGameMapState extends State<FindGameMap> {
                       ),
 
                       Padding(
-                        padding: EdgeInsets.all(4.0),
+                        padding: EdgeInsets.fromLTRB(4.0, 16.0, 4.0, 16.0),
                       ),
                 
                     ],

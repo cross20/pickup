@@ -239,7 +239,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                           child: Text("Join Game")),
 
                       Padding(
-                        padding: EdgeInsets.all(4.0)
+                        padding: EdgeInsets.all(16.0),
                       ),
                     
                     ],
