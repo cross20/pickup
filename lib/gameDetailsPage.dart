@@ -240,20 +240,10 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                           }
                         },
                           textColor: Colors.white,
-<<<<<<< HEAD
-                          color: Colors.blue,
-                          child: Text("Join Game")),
-
-                      Padding(
-                        padding: EdgeInsets.all(16.0),
-                      ),
-                    
-=======
                           color: joinedGameState ? Colors.red: Colors.blue,
                           child: joinedGameState ? Text("Leave Game"): Text("Join Game"),
                   )
 
->>>>>>> joinGamesFunctionality
                     ],
                   ),
                 ),

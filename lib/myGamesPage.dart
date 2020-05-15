@@ -98,10 +98,6 @@ class _MyGamesPageState extends State<MyGamesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
-      appBar: AppBar(title: Text('Your Games')),
-=======
->>>>>>> joinGamesFunctionality
       body: Column(
         children: <Widget>[
           AppBar(
