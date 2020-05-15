@@ -255,7 +255,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create Game Page"),
+        title: Text("Create A Game"),
         centerTitle: true,
       ),
       body: Padding(

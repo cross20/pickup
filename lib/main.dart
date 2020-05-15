@@ -15,13 +15,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: new RootPage(auth: new Auth()),
       routes: <String, WidgetBuilder> {
-        '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game Page"),
+        '/createGame': (BuildContext context) => CreateGamePage(title: "Create Game"),
         '/map':(BuildContext context) => FindGameMap(title: "This is the map"),
         //'/login':(BuildContext context) => LoginPage(),
         '/signup':(BuildContext context) => SignupLoginPage(),

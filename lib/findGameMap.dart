@@ -338,6 +338,7 @@ class _FindGameMapState extends State<FindGameMap> {
                   ));
           }
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             // If the initial position is null, return a container saying that we are loading the map.
             home: _userlocation == null
                 ? Scaffold(

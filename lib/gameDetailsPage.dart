@@ -117,6 +117,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
           } else {
             // Show this loading map screen when we are loading in the database data
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               home: Container(
                 child: Center(
                   child: Text(
@@ -129,6 +130,7 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
             );
           }
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
               title: "Game Detail Page",
               // If the initial position is null, return a container saying that we are loading the map.
               home: Scaffold(
