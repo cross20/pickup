@@ -218,6 +218,10 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                               flex: 2,
                               child: GoogleMap(
                                 onMapCreated: _onMapCreated,
+                                myLocationButtonEnabled: false,
+                                zoomControlsEnabled: true,
+                                zoomGesturesEnabled: true,
+                                mapToolbarEnabled: true,
                                 initialCameraPosition: CameraPosition(
                                   target: _center,
                                   zoom: 15,
@@ -232,7 +236,12 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                           },
                           textColor: Colors.white,
                           color: Colors.blue,
-                          child: Text("Join Game"))
+                          child: Text("Join Game")),
+
+                      Padding(
+                        padding: EdgeInsets.all(4.0)
+                      ),
+                    
                     ],
                   ),
                 ),

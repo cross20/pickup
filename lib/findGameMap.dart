@@ -238,7 +238,9 @@ class _FindGameMapState extends State<FindGameMap> {
                         isThreeLine: true,
                       ),
 
-
+                      Padding(
+                        padding: EdgeInsets.all(4.0),
+                      ),
                 
                     ],
                   );
@@ -352,6 +354,10 @@ class _FindGameMapState extends State<FindGameMap> {
                 // Once the initial position is not null, create the google map.
                 : GoogleMap(
                     onMapCreated: _onMapCreated,
+                    myLocationButtonEnabled: false,
+                    mapToolbarEnabled: false,
+                    zoomControlsEnabled: true,
+                    zoomGesturesEnabled: true,
                     initialCameraPosition: CameraPosition(
                       target: _userlocation,
                       zoom: 11.0,
