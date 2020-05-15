@@ -37,16 +37,14 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
   }
 
   Game currentgame;
-
   GoogleMapController _controller;
+  bool joinedGameState;
 
   static LatLng _center;
 
   void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
   }
-
-
   //checks if the user has joined the game or not
     bool usergamestatus(String userid, String games)
     {
@@ -65,9 +63,6 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
         instance.leaveuser(userid,games);
       }
 
-    
-
-
   Set<Marker> markerlist = new Set();
 
   var gamedateformatter = new DateFormat('yMMMMEEEEd');
@@ -82,11 +77,11 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
     // Initialize the current user location on first map build
     _center = null;
     _getUserLocation();
-    
+    joinedGameState = instance.gamestatus(global.userId, widget.gameid);
   }
 
   Widget build(BuildContext context) {
-    
+
     return new StreamBuilder(
         // Get the current game
         stream: Firestore.instance
@@ -229,12 +224,23 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                                 markers: markerlist,
                               )),
 
-                      RaisedButton(
-                          onPressed: () {
-
+                      new RaisedButton(
+                        onPressed: () {
+                          if(joinedGameState == false) {
                             updatetheuser(global.userId, widget.gameid);
-                          },
+                            setState(() {
+                              joinedGameState = !joinedGameState;
+                            });
+                          }
+                          else{
+                            leavetheuser(global.userId, widget.gameid);
+                            setState(() {
+                              joinedGameState = !joinedGameState;
+                            });
+                          }
+                        },
                           textColor: Colors.white,
+<<<<<<< HEAD
                           color: Colors.blue,
                           child: Text("Join Game")),
 
@@ -242,6 +248,12 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
                         padding: EdgeInsets.all(16.0),
                       ),
                     
+=======
+                          color: joinedGameState ? Colors.red: Colors.blue,
+                          child: joinedGameState ? Text("Leave Game"): Text("Join Game"),
+                  )
+
+>>>>>>> joinGamesFunctionality
                     ],
                   ),
                 ),
