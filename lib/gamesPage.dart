@@ -98,10 +98,6 @@ class _GamesPageState extends State<GamesPage> {
                           ),
                         ),
                         FlatButton(
-                          onPressed: () {
-                            Navigator.of(context)
-                                .push(_createRoute(FilterPage()));
-                          },
                           child: Icon(Icons.filter_list),
                         )
                         // Filter by game type (e.g. Basketball, Football, etc.), time, etc.
